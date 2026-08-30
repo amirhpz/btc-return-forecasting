@@ -1,7 +1,8 @@
 split:
   id: chronological_70_15_15_v001
   method: chronological
-  split_on: target_timestamp
+  split_on: decision_time
+  purge_on: target_time
   train_fraction: 0.70
   validation_fraction: 0.15
   test_fraction: 0.15

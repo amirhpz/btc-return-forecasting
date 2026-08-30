@@ -2,7 +2,7 @@
 
 | Experiment | Run ID | Date UTC | Data Version | Split Version | Feature Set | Model | Seed | Evaluation Split | Decision | Notes |
 |---|---|---|---|---|---|---|---:|---|---|---|
-| E00 | | 2026-08-30 | Binance monthly archives | | | | | none | E00A COMPLETE; E00B COMPLETE — REVIEW_REQUIRED | All 108 source archives acquired and independently verified. Raw validation completed without modifying or repairing data; measured temporal anomalies require a gap/data-quality policy before E00C. |
+| E00 | | 2026-08-31 | btcusdt_5m_v001 / btcusdt_1h_v001 / btcusdt_1h_target_v001 | chronological_70_15_15_v001 | | | | none | COMPLETE | E00 data foundation complete: acquisition, validation, canonical 5m and 1h datasets, one-hour target, and leakage-safe frozen chronological split. |
 | E01 | | | | | F0 | B0 | | validation | BLOCKED | |
 | E02 | | | | | F0 | B1 | | validation | BLOCKED | |
 | E03 | | | | | F0 | B2 | 42 | validation | BLOCKED | |
@@ -154,3 +154,34 @@ row received no fabricated target. The derived artifact remains excluded from Gi
 | Every target spans exactly one real hour | yes |
 | Targeted tests | 3 passed |
 | SHA-256 | `bbf4fbde2d779ce022a0dec603ff1f024257833a79e29f47cce7758194a0c63b` |
+
+## E00E — COMPLETE
+
+The fixed chronological 70% / 15% / 15% split was derived from sorted `decision_time` values.
+Train and validation samples whose `target_time` reached the next split period were purged rather
+than moved or modified. The frozen boundaries are stored in
+`configs/frozen/split_boundaries_v001.yaml`.
+
+| Result | Measured value |
+|---|---:|
+| Total eligible target rows | 78,310 |
+| Train rows | 54,816 |
+| Validation rows | 11,745 |
+| Test rows | 11,747 |
+| Purged train-boundary rows | 1 |
+| Purged validation-boundary rows | 1 |
+| Train boundary | [2017-08-17T05:00:00Z, 2023-11-26T03:00:00Z) |
+| Validation boundary | [2023-11-26T03:00:00Z, 2025-03-29T13:00:00Z) |
+| Test boundary | [2025-03-29T13:00:00Z, 2026-07-31T23:00:00Z] |
+| Chronological ordering | yes |
+| Overlap | 0 |
+| Targets crossing boundaries | 0 |
+| Targeted tests | 3 passed |
+| Full pytest | 52 passed |
+| Config validation | PASSED: 26 YAML files, 11 experiments, 3 feature sets, 5 models |
+
+## E00 Data Foundation — COMPLETE
+
+E00A through E00E are complete. The immutable raw archive set, validated canonical datasets,
+one-real-hour target, and leakage-safe frozen chronological split are ready for later benchmark
+phases. E01 has not started.

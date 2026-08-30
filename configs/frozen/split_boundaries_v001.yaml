@@ -1,0 +1,44 @@
+split:
+  id: chronological_70_15_15_v001
+  method: chronological
+  sort_column: decision_time
+  purge_column: target_time
+  fractions:
+    train: 0.7
+    validation: 0.15
+    test: 0.15
+  total_eligible_target_rows: 78310
+  provisional_rows:
+    train: 54817
+    validation: 11746
+    test: 11747
+  retained_rows:
+    train: 54816
+    validation: 11745
+    test: 11747
+  purged_boundary_rows:
+    train: 1
+    validation: 1
+    total: 2
+  boundaries:
+    train:
+      decision_time_start_inclusive: '2017-08-17T05:00:00Z'
+      decision_time_end_exclusive: '2023-11-26T03:00:00Z'
+      last_retained_decision_time: '2023-11-26T01:00:00Z'
+      target_time_end_exclusive: '2023-11-26T03:00:00Z'
+    validation:
+      decision_time_start_inclusive: '2023-11-26T03:00:00Z'
+      decision_time_end_exclusive: '2025-03-29T13:00:00Z'
+      last_retained_decision_time: '2025-03-29T11:00:00Z'
+      target_time_end_exclusive: '2025-03-29T13:00:00Z'
+    test:
+      decision_time_start_inclusive: '2025-03-29T13:00:00Z'
+      decision_time_end_inclusive: '2026-07-31T23:00:00Z'
+      target_time_end_inclusive: '2026-08-01T00:00:00Z'
+  invariants:
+    chronologically_ordered: true
+    zero_overlap: true
+    no_target_crosses_split_boundary: true
+  source:
+    path: data/processed/btcusdt_1h_target_v001.parquet
+    sha256: bbf4fbde2d779ce022a0dec603ff1f024257833a79e29f47cce7758194a0c63b

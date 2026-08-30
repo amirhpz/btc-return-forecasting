@@ -1,7 +1,7 @@
 experiment:
   id: E00
   name: data_sanity_and_freeze
-  status: ready
+  status: complete
   stage: foundation
   timeframe: 5m_master_and_1h_resample
   feature_set: null
