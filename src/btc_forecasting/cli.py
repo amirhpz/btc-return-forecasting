@@ -17,6 +17,7 @@ from btc_forecasting.data.canonical_5m import run_canonical_5m_build
 from btc_forecasting.data.raw_validation import run_raw_validation
 from btc_forecasting.experiments.registry import load_experiment_registry
 from btc_forecasting.reporting.manifest import create_run_manifest, write_manifest
+from btc_forecasting.targets.one_hour import run_one_hour_target_build
 
 
 def _doctor(root: Path) -> int:
@@ -199,6 +200,13 @@ def _build_canonical_1h(root: Path) -> int:
     return 0
 
 
+def _build_one_hour_targets(root: Path) -> int:
+    result = run_one_hour_target_build(project_root=root)
+    print(json.dumps(result.verification, indent=2, sort_keys=True))
+    print(f"artifact={result.artifact_path.relative_to(root)}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="btc-forecast")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -217,6 +225,7 @@ def build_parser() -> argparse.ArgumentParser:
     build_canonical_5m = subparsers.add_parser("build-canonical-5m")
     build_canonical_5m.add_argument("--config", type=Path, required=True)
     subparsers.add_parser("build-canonical-1h")
+    subparsers.add_parser("build-one-hour-targets")
     return parser
 
 
@@ -239,5 +248,6 @@ def main(argv: list[str] | None = None) -> None:
         "validate-raw-data": lambda: _validate_raw_data(root, args.config),
         "build-canonical-5m": lambda: _build_canonical_5m(root, args.config),
         "build-canonical-1h": lambda: _build_canonical_1h(root),
+        "build-one-hour-targets": lambda: _build_one_hour_targets(root),
     }
     raise SystemExit(commands[args.command]())

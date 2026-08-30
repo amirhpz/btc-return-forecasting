@@ -130,3 +130,27 @@ Git.
 | Every retained hour contains exactly 12 expected 5m candles | yes |
 | Targeted tests | 3 passed |
 | SHA-256 | `c46c35459477cb43a6f4ce6e2b2ebbfb64e57e4972a6a472382fad8f32694cb6` |
+
+## E00D — COMPLETE
+
+The one-real-hour future log-return target was constructed only where the next canonical hourly
+bar existed at exactly `t + 1 hour`. No target was created across a missing hour, and the final
+row received no fabricated target. The derived artifact remains excluded from Git.
+
+| Result | Measured value |
+|---|---:|
+| Artifact | `data/processed/btcusdt_1h_target_v001.parquet` |
+| Input 1h rows | 78,344 |
+| Eligible target rows | 78,310 |
+| Excluded because next exact hour was missing | 33 |
+| Final-row exclusion | 1 |
+| First decision_time | 2017-08-17T05:00:00Z |
+| Last decision_time | 2026-07-31T23:00:00Z |
+| NaN/Inf targets | 0 |
+| Target min | -0.2010332141747841 |
+| Target mean | 0.00003251044773681708 |
+| Target median | 0.00006772905705562043 |
+| Target max | 0.16028033154146137 |
+| Every target spans exactly one real hour | yes |
+| Targeted tests | 3 passed |
+| SHA-256 | `bbf4fbde2d779ce022a0dec603ff1f024257833a79e29f47cce7758194a0c63b` |
