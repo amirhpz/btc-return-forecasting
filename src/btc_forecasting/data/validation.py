@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 
 import pandas as pd
+from pandas.tseries.frequencies import to_offset
 
 from btc_forecasting.data.schema import PRICE_COLUMNS, REQUIRED_OHLCV_COLUMNS
 
@@ -38,7 +39,7 @@ def validate_ohlcv(
     non_monotonic = not timestamps.is_monotonic_increasing
 
     ordered_unique = timestamps.drop_duplicates().sort_values()
-    expected_delta = pd.Timedelta(expected_interval)
+    expected_delta = pd.Timedelta(to_offset(expected_interval).nanos, unit="ns")
     diffs = ordered_unique.diff().dropna()
     missing_intervals = int(((diffs / expected_delta) - 1).clip(lower=0).sum())
 

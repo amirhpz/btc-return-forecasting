@@ -12,6 +12,7 @@ from typing import Any
 from btc_forecasting.common.config import find_project_root, list_yaml_files, load_yaml
 from btc_forecasting.data.acquisition import run_acquisition
 from btc_forecasting.data.acquisition_config import load_acquisition_config
+from btc_forecasting.data.raw_validation import run_raw_validation
 from btc_forecasting.experiments.registry import load_experiment_registry
 from btc_forecasting.reporting.manifest import create_run_manifest, write_manifest
 
@@ -161,6 +162,24 @@ def _acquire_data(
     return result.exit_code
 
 
+def _validate_raw_data(root: Path, config_argument: Path) -> int:
+    config_path = config_argument if config_argument.is_absolute() else root / config_argument
+    config = load_acquisition_config(config_path, project_root=root)
+    result = run_raw_validation(
+        project_root=root,
+        config_path=config_path,
+        config=config,
+    )
+    display_summary = dict(result.summary)
+    display_summary.pop("ignore_value_counts", None)
+    print(json.dumps(display_summary, indent=2, sort_keys=True))
+    print(f"summary={result.summary_path.relative_to(root)}")
+    print(f"archive_validation={result.archive_validation_path.relative_to(root)}")
+    print(f"gaps={result.gaps_path.relative_to(root)}")
+    print(f"timestamp_anomalies={result.timestamp_anomalies_path.relative_to(root)}")
+    return result.exit_code
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="btc-forecast")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -174,6 +193,8 @@ def build_parser() -> argparse.ArgumentParser:
     mode = acquire_data.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--verify-only", action="store_true")
+    validate_raw_data = subparsers.add_parser("validate-raw-data")
+    validate_raw_data.add_argument("--config", type=Path, required=True)
     return parser
 
 
@@ -193,5 +214,6 @@ def main(argv: list[str] | None = None) -> None:
             dry_run=args.dry_run,
             verify_only=args.verify_only,
         ),
+        "validate-raw-data": lambda: _validate_raw_data(root, args.config),
     }
     raise SystemExit(commands[args.command]())

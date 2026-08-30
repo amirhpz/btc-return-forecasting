@@ -27,3 +27,16 @@ Use uv with Python 3.12 and mutually exclusive PyTorch CPU/CUDA 12.6 extras.
 ## D007 - 2026-08-30 - Test Governance
 
 Final test is locked until E10. E01-E09 use training and validation only.
+
+## D008 - 2026-08-30 - E00B Raw Data Policy
+
+- The 241 off-grid rows in 2018-02 are a deterministic timestamp displacement.
+- In derived data only, map these 241 `open_time` values to their unique nearest 5-minute grid positions.
+- Raw Binance archives remain unchanged.
+- After this mapping, treat 1,703 grid positions as genuinely missing.
+- Do not fill or interpolate missing candles.
+- Retain all 17 `close_time`-anomaly rows.
+- Downstream chronology and resampling use `open_time`, not source `close_time`.
+- Do not repair source `close_time`.
+- Retain zero-volume rows.
+- Do not filter rows using Binance's `ignore` field, and do not use `ignore` as a feature.
