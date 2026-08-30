@@ -109,3 +109,24 @@ Parquet artifact remains excluded from Git.
 | Raw archives modified | 0 |
 | Targeted tests | 3 passed |
 | SHA-256 | `bce19f37e38431f15dcefd7e09f0ec37a091d41be664b6f509c71e29502dd86f` |
+
+## E00C2 — COMPLETE
+
+The canonical BTCUSDT hourly dataset was built from complete UTC hours in the canonical 5-minute
+dataset. Hours missing any expected source timestamp from `HH:00` through `HH:55` were excluded
+without filling, interpolation, or candle synthesis. The derived artifacts remain excluded from
+Git.
+
+| Result | Measured value |
+|---|---:|
+| Artifact | `data/processed/btcusdt_1h_v001.parquet` |
+| Total possible hourly intervals | 78,500 |
+| Complete 1h bars | 78,344 |
+| Incomplete hours excluded | 156 |
+| First timestamp | 2017-08-17T04:00:00Z |
+| Last timestamp | 2026-07-31T23:00:00Z |
+| Duplicate timestamps | 0 |
+| Off-grid timestamps | 0 |
+| Every retained hour contains exactly 12 expected 5m candles | yes |
+| Targeted tests | 3 passed |
+| SHA-256 | `c46c35459477cb43a6f4ce6e2b2ebbfb64e57e4972a6a472382fad8f32694cb6` |

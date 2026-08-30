@@ -12,6 +12,7 @@ from typing import Any
 from btc_forecasting.common.config import find_project_root, list_yaml_files, load_yaml
 from btc_forecasting.data.acquisition import run_acquisition
 from btc_forecasting.data.acquisition_config import load_acquisition_config
+from btc_forecasting.data.canonical_1h import run_canonical_1h_build
 from btc_forecasting.data.canonical_5m import run_canonical_5m_build
 from btc_forecasting.data.raw_validation import run_raw_validation
 from btc_forecasting.experiments.registry import load_experiment_registry
@@ -190,6 +191,14 @@ def _build_canonical_5m(root: Path, config_argument: Path) -> int:
     return 0
 
 
+def _build_canonical_1h(root: Path) -> int:
+    result = run_canonical_1h_build(project_root=root)
+    print(json.dumps(result.verification, indent=2, sort_keys=True))
+    print(f"artifact={result.artifact_path.relative_to(root)}")
+    print(f"incomplete_hours={result.incomplete_hours_path.relative_to(root)}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="btc-forecast")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -207,6 +216,7 @@ def build_parser() -> argparse.ArgumentParser:
     validate_raw_data.add_argument("--config", type=Path, required=True)
     build_canonical_5m = subparsers.add_parser("build-canonical-5m")
     build_canonical_5m.add_argument("--config", type=Path, required=True)
+    subparsers.add_parser("build-canonical-1h")
     return parser
 
 
@@ -228,5 +238,6 @@ def main(argv: list[str] | None = None) -> None:
         ),
         "validate-raw-data": lambda: _validate_raw_data(root, args.config),
         "build-canonical-5m": lambda: _build_canonical_5m(root, args.config),
+        "build-canonical-1h": lambda: _build_canonical_1h(root),
     }
     raise SystemExit(commands[args.command]())
