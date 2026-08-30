@@ -1,0 +1,7 @@
+model:
+  id: B0
+  family: naive_suite
+  predictors:
+    - zero_return
+    - previous_observed_return
+  trainable: false

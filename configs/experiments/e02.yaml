@@ -1,0 +1,12 @@
+experiment:
+  id: E02
+  name: ridge_1h_f0
+  status: blocked_until_E01_passes
+  stage: development
+  timeframe: 1h
+  lookback: 24h
+  horizon: 1h
+  feature_set: F0
+  model: B1
+  evaluation_split: validation
+  changes_from_previous: model_only

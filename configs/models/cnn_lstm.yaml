@@ -1,0 +1,14 @@
+model:
+  id: B4
+  family: cnn_lstm
+  conv_channels: 32
+  kernel_size: 3
+  activation: relu
+  temporal_pooling:
+    type: max_pool_1d
+    kernel_size: 2
+  lstm_hidden_size: 64
+  lstm_layers: 1
+  head_dropout: 0.20
+  output_size: 1
+  attention: false

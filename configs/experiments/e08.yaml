@@ -1,0 +1,16 @@
+experiment:
+  id: E08
+  name: frozen_1h_candidate_multiseed_validation
+  status: blocked_until_candidate_is_frozen
+  stage: confirmation
+  timeframe: 1h
+  lookback: 24h
+  horizon: 1h
+  feature_set: TO_BE_FROZEN_FROM_E05_E07
+  model: B4
+  evaluation_split: validation
+  seeds:
+    - 42
+    - 123
+    - 2026
+  changes_from_previous: seed_replication_only

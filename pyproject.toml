@@ -1,0 +1,97 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "btc-return-forecasting"
+version = "0.1.0"
+description = "Leakage-safe BTCUSDT one-hour-ahead return forecasting benchmark"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "joblib>=1.4,<2",
+  "matplotlib>=3.9,<4",
+  "numpy>=2.0,<3",
+  "pandas>=2.2,<3",
+  "pyarrow>=17,<24",
+  "pyyaml>=6,<7",
+  "requests>=2.32,<3",
+  "scikit-learn>=1.5,<2",
+  "scipy>=1.14,<2",
+  "tqdm>=4.66,<5",
+]
+
+[project.optional-dependencies]
+cpu = [
+  "torch>=2.13.0,<2.14",
+]
+cu126 = [
+  "torch>=2.13.0,<2.14",
+]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.14,<2",
+  "pytest>=8.3,<10",
+  "pytest-cov>=6,<8",
+  "ruff>=0.9,<1",
+  "types-pyyaml>=6.0.12,<7",
+]
+analysis = [
+  "ipykernel>=6.29,<8",
+  "jupyterlab>=4.3,<5",
+]
+
+[project.scripts]
+btc-forecast = "btc_forecasting.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/btc_forecasting"]
+
+[tool.uv]
+conflicts = [
+  [
+    { extra = "cpu" },
+    { extra = "cu126" },
+  ],
+]
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cpu", extra = "cpu" },
+  { index = "pytorch-cu126", extra = "cu126" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unused_configs = true
+mypy_path = "src"
+

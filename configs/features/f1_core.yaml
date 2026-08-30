@@ -1,0 +1,21 @@
+feature_set:
+  id: F1
+  name: core_duration_based
+  status: frozen
+  extends: F0
+  design_rule: windows_are_real_time_durations_not_fixed_bar_counts
+  additional_features:
+    - log_return_12h
+    - log_return_24h
+    - ema_distance_6h
+    - ema_distance_24h
+    - atr_pct_14h
+    - rsi_14h
+    - bollinger_width_20h
+    - bollinger_position_20h
+    - macd_histogram_norm_12h_26h_9h
+    - upper_wick_ratio
+    - lower_wick_ratio
+    - body_to_range_ratio
+    - volume_zscore_24h
+  expected_total_feature_count: 23

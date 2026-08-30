@@ -1,0 +1,8 @@
+model:
+  id: B1
+  family: ridge_regression
+  alpha: 1.0
+  fit_intercept: true
+  input_view: flattened_window
+  feature_scaling: train_only_robust
+  target_scaling: train_only_standard

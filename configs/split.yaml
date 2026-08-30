@@ -1,0 +1,15 @@
+split:
+  id: chronological_70_15_15_v001
+  method: chronological
+  split_on: target_timestamp
+  train_fraction: 0.70
+  validation_fraction: 0.15
+  test_fraction: 0.15
+  purge_targets_crossing_boundary: true
+  permit_past_context_across_boundary: true
+  final_test_locked: true
+  final_test_unlock_experiment: E10
+  boundaries:
+    status: generated_and_frozen_after_E00
+    path: configs/frozen/split_boundaries_v001.yaml
+  access_log: docs/test_access_log.csv

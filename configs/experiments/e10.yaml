@@ -1,0 +1,20 @@
+experiment:
+  id: E10
+  name: final_locked_test_1h_and_5m
+  status: blocked_until_all_configs_are_frozen_and_approved
+  stage: final_test
+  timeframes:
+    - 1h
+    - 5m
+  common_decision_grid: hourly_bar_close
+  common_horizon: 1h
+  common_lookback: 24h
+  evaluation_split: test
+  test_access: single_controlled_opening
+  required_log: docs/test_access_log.csv
+  outputs:
+    - per_seed_predictions
+    - per_seed_metrics
+    - aggregate_metrics
+    - paired_bootstrap_intervals
+    - final_comparison_table

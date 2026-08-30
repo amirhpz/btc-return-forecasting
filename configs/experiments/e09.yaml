@@ -1,0 +1,18 @@
+experiment:
+  id: E09
+  name: frozen_candidate_transfer_to_5m_validation
+  status: blocked_until_E08_passes
+  stage: confirmation
+  timeframe: 5m
+  lookback: 24h
+  lookback_bars: 288
+  horizon: 1h
+  horizon_bars: 12
+  feature_set: SAME_FROZEN_CONCEPT_AS_E08
+  model: B4
+  evaluation_split: validation_on_common_hourly_grid
+  seeds:
+    - 42
+    - 123
+    - 2026
+  changes_from_previous: timeframe_only

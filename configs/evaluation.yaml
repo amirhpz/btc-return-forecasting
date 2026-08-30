@@ -1,0 +1,31 @@
+evaluation:
+  primary_space: log_return
+  primary_metrics:
+    - mae
+    - rmse
+    - r2
+    - pearson_ic
+    - spearman_rank_ic
+    - directional_accuracy
+    - mse_skill_vs_zero_return
+  secondary_price_metrics:
+    enabled: true
+    metrics:
+      - price_mae
+      - price_rmse
+  directional_accuracy:
+    true_return_epsilon: 1.0e-12
+    zero_prediction_counts_as_miss: true
+  cross_timeframe_comparison:
+    common_decision_grid: hourly_bar_close
+    common_target_horizon: 1h
+    common_lookback: 24h
+    evaluate_timestamp_intersection_only: true
+  final_uncertainty:
+    method: paired_moving_block_bootstrap
+    confidence_level: 0.95
+    block_duration: 24h
+    repetitions: 2000
+  reporting:
+    mean_and_standard_deviation_across_final_seeds: true
+    raw_per_seed_results: true

@@ -1,0 +1,13 @@
+experiment:
+  id: E07
+  name: cnn_lstm_1h_f2_full_52
+  status: blocked_until_full_52_catalog_is_frozen
+  stage: development
+  timeframe: 1h
+  lookback: 24h
+  horizon: 1h
+  feature_set: F2
+  model: B4
+  evaluation_split: validation
+  seed: 42
+  changes_from_previous: feature_set_only

@@ -1,0 +1,41 @@
+data_acquisition:
+  provider: binance_public_data
+  base_url: https://data.binance.vision
+  market: spot
+  symbol: BTCUSDT
+  interval: 5m
+  timezone: UTC
+  start_date: 2017-08-17
+  end_date_exclusive: 2026-08-01
+  archive_frequency: monthly
+  expected_archive_count: 108
+  destination: data/raw/binance/spot/monthly/klines/BTCUSDT/5m
+  manifest_path: outputs/data/e00a/acquisition_manifest.json
+  summary_path: outputs/data/e00a/acquisition_summary.json
+  upstream_timestamp_units:
+    before_2025_01_01: milliseconds
+    from_2025_01_01: microseconds
+  expected_kline_fields:
+    - open_time
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - close_time
+    - quote_asset_volume
+    - number_of_trades
+    - taker_buy_base_volume
+    - taker_buy_quote_volume
+    - ignore
+  download:
+    max_workers: 1
+    retries: 5
+    resume_partial: true
+    verify_upstream_checksum: true
+    verify_zip_crc: true
+    connect_timeout_seconds: 15
+    read_timeout_seconds: 120
+    chunk_size_bytes: 1048576
+    backoff_initial_seconds: 1
+    backoff_max_seconds: 30

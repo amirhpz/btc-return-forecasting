@@ -1,0 +1,22 @@
+training:
+  optimizer: adam
+  learning_rate: 0.001
+  loss: huber
+  batch_size: 128
+  max_epochs: 30
+  early_stopping:
+    enabled: true
+    patience: 5
+    monitor: validation_rmse_original_target_scale
+    mode: min
+  gradient_clip_norm: 1.0
+  feature_scaler:
+    type: robust
+    fit_scope: train_only
+  target_scaler:
+    type: standard
+    fit_scope: train_only
+  deterministic_debug: true
+  mixed_precision: false
+  num_workers_windows_default: 0
+  checkpoint_policy: best_validation_metric

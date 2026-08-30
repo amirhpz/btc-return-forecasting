@@ -1,0 +1,10 @@
+model:
+  id: B3
+  family: cnn_1d
+  channels:
+    - 32
+  kernel_size: 3
+  activation: relu
+  pooling: adaptive_average
+  head_dropout: 0.20
+  output_size: 1

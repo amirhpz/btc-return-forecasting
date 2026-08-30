@@ -1,0 +1,63 @@
+data:
+  raw_master:
+    path: data/raw/binance/5m/BTCUSDT_5m.csv
+    allowed_formats:
+      - csv
+      - parquet
+    exchange: binance
+    market: spot
+    symbol: BTCUSDT
+    timeframe: 5m
+    timezone: UTC
+    timestamp_semantics: open_time
+    immutable: true
+  columns:
+    open_time: open_time
+    open: open
+    high: high
+    low: low
+    close: close
+    volume: volume
+    close_time: close_time
+    quote_asset_volume: quote_asset_volume
+    number_of_trades: number_of_trades
+    taker_buy_base_volume: taker_buy_base_volume
+    taker_buy_quote_volume: taker_buy_quote_volume
+  required_columns:
+    - open_time
+    - open
+    - high
+    - low
+    - close
+    - volume
+  validation:
+    expected_interval: 5min
+    reject_duplicate_timestamps: true
+    reject_non_monotonic_timestamps: true
+    reject_nonpositive_prices: true
+    reject_negative_volume: true
+    report_zero_volume: true
+    report_missing_intervals: true
+    report_ohlc_inconsistency: true
+  resampling_1h:
+    source_timeframe: 5m
+    target_timeframe: 1h
+    label: left
+    closed: left
+    expected_source_bars: 12
+    require_complete_buckets: true
+    incomplete_bucket_action: report_and_exclude
+    aggregation:
+      open: first
+      high: max
+      low: min
+      close: last
+      volume: sum
+      quote_asset_volume: sum
+      number_of_trades: sum
+      taker_buy_base_volume: sum
+      taker_buy_quote_volume: sum
+  manifests:
+    raw_manifest: data/processed/manifests/raw_5m_manifest.json
+    resampled_manifest: data/processed/manifests/resampled_1h_manifest.json
+    frozen_split_boundaries: configs/frozen/split_boundaries_v001.yaml

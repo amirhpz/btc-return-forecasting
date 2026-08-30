@@ -1,0 +1,20 @@
+project:
+  id: btc_return_forecasting_v001
+  name: btc-return-forecasting
+  scope_status: frozen
+  market: cryptocurrency_spot
+  exchange: binance
+  symbol: BTCUSDT
+  timezone: UTC
+  problem_type: regression
+  target_name: future_log_return_1h
+  target_horizon: 1h
+  real_time_lookback: 24h
+  development_timeframe: 1h
+  comparison_timeframe: 5m
+  final_test_access_experiment: E10
+  seed_debug: 42
+  seeds_final:
+    - 42
+    - 123
+    - 2026

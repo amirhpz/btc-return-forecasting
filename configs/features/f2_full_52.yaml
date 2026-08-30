@@ -1,0 +1,11 @@
+feature_set:
+  id: F2
+  name: full_52_existing_catalog
+  status: blocked_until_catalog_is_frozen
+  expected_total_feature_count: 52
+  catalog_path: configs/features/full_52_catalog.csv
+  execution_guard: fail_if_catalog_does_not_contain_exactly_52_unique_enabled_features
+  notes:
+    - Do not invent feature names or formulas.
+    - Populate the catalog from the existing validated 52-feature pipeline.
+    - Every formula and causal availability rule must be documented before E07.

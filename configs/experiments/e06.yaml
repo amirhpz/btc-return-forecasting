@@ -1,0 +1,13 @@
+experiment:
+  id: E06
+  name: cnn_lstm_1h_f1
+  status: blocked_until_E05_passes
+  stage: development
+  timeframe: 1h
+  lookback: 24h
+  horizon: 1h
+  feature_set: F1
+  model: B4
+  evaluation_split: validation
+  seed: 42
+  changes_from_previous: feature_set_only

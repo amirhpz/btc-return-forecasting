@@ -1,0 +1,15 @@
+experiment:
+  id: E00
+  name: data_sanity_and_freeze
+  status: ready
+  stage: foundation
+  timeframe: 5m_master_and_1h_resample
+  feature_set: null
+  model: null
+  evaluation_split: none
+  changes_from_previous: initial_data_contract
+  outputs:
+    - raw_validation_report
+    - resampling_report
+    - dataset_manifests
+    - frozen_split_boundaries

@@ -1,0 +1,8 @@
+model:
+  id: B2
+  family: lstm
+  hidden_size: 64
+  num_layers: 1
+  head_dropout: 0.20
+  bidirectional: false
+  output_size: 1

@@ -1,0 +1,16 @@
+feature_set:
+  id: F0
+  name: minimal_duration_based
+  status: frozen
+  design_rule: windows_are_real_time_durations_not_fixed_bar_counts
+  features:
+    - log_return_1h
+    - log_return_3h
+    - log_return_6h
+    - candle_log_return
+    - high_low_range_pct
+    - close_position_in_range
+    - rolling_volatility_6h
+    - rolling_volatility_24h
+    - log_volume_change_1h
+    - relative_volume_24h
