@@ -89,3 +89,23 @@ The full ignore value counts and exact timestamp-violation details are retained 
 runtime artifacts. The validator applied no floating-point tolerance: source numeric strings were
 compared as exact decimal values. E00B does not choose a repair policy; gap and timestamp-anomaly
 handling must be decided before E00C.
+
+## E00C1 — COMPLETE
+
+The canonical derived Binance Spot BTCUSDT 5-minute dataset was built at
+`data/processed/btcusdt_5m_v001.parquet`. Raw archives remained unchanged, and the processed
+Parquet artifact remains excluded from Git.
+
+| Result | Measured value |
+|---|---:|
+| Rows | 940,297 |
+| First timestamp | 2017-08-17T04:00:00Z |
+| Last timestamp | 2026-07-31T23:55:00Z |
+| Off-grid timestamps | 0 |
+| Strictly ordered | yes |
+| Duplicate timestamps | 0 |
+| Timestamp corrections applied | 241 |
+| Missing grid positions | 1,703 |
+| Raw archives modified | 0 |
+| Targeted tests | 3 passed |
+| SHA-256 | `bce19f37e38431f15dcefd7e09f0ec37a091d41be664b6f509c71e29502dd86f` |
