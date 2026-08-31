@@ -240,6 +240,15 @@ def _run_lstm_baseline(root: Path) -> int:
     return 0
 
 
+def _run_lstm_mse_ablation(root: Path) -> int:
+    from btc_forecasting.training.lstm_mse import run_lstm_mse_ablation
+
+    result = run_lstm_mse_ablation(project_root=root)
+    print(json.dumps(result.result, indent=2, sort_keys=True))
+    print(f"artifact={result.run_directory.relative_to(root)}")
+    return 0
+
+
 def _diagnose_lstm_distribution(root: Path, source_run: Path) -> int:
     from btc_forecasting.training.lstm_diagnostics import (
         run_prediction_distribution_diagnostic,
@@ -289,6 +298,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("run-zero-return-baseline")
     subparsers.add_parser("run-ridge-baseline")
     subparsers.add_parser("run-lstm-baseline")
+    subparsers.add_parser("run-lstm-mse-ablation")
     diagnose_distribution = subparsers.add_parser("diagnose-lstm-distribution")
     diagnose_distribution.add_argument("--source-run", type=Path, required=True)
     diagnose_overfit = subparsers.add_parser("diagnose-lstm-overfit")
@@ -320,6 +330,7 @@ def main(argv: list[str] | None = None) -> None:
         "run-zero-return-baseline": lambda: _run_zero_return_baseline(root),
         "run-ridge-baseline": lambda: _run_ridge_baseline(root),
         "run-lstm-baseline": lambda: _run_lstm_baseline(root),
+        "run-lstm-mse-ablation": lambda: _run_lstm_mse_ablation(root),
         "diagnose-lstm-distribution": lambda: _diagnose_lstm_distribution(
             root, args.source_run
         ),

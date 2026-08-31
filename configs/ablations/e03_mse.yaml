@@ -1,0 +1,14 @@
+experiment:
+  id: E03-MSE
+  name: lstm_1h_f0_mse_loss_ablation
+  base_experiment: E03
+  stage: controlled_ablation
+  evaluation_split: validation
+  seed: 42
+  changed_modeling_choice: loss_only
+training_overrides:
+  loss:
+    type: torch.nn.MSELoss
+    reduction: mean
+    target_scale: unscaled_one_hour_log_return
+  early_stopping_monitor: validation_mse_loss

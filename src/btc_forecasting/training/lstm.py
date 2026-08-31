@@ -206,7 +206,7 @@ def build_training_components(
     model: LSTMRegressor,
     *,
     training_config: dict[str, Any],
-) -> tuple[torch.optim.Optimizer, nn.HuberLoss, torch.optim.lr_scheduler.CosineAnnealingLR]:
+) -> tuple[torch.optim.Optimizer, nn.Module, torch.optim.lr_scheduler.CosineAnnealingLR]:
     optimizer_config = training_config["optimizer"]
     loss_config = training_config["loss"]
     scheduler_config = training_config["scheduler"]
@@ -218,10 +218,16 @@ def build_training_components(
         weight_decay=float(optimizer_config["weight_decay"]),
         amsgrad=bool(optimizer_config["amsgrad"]),
     )
-    loss = nn.HuberLoss(
-        delta=float(loss_config["delta"]),
-        reduction=str(loss_config["reduction"]),
-    )
+    loss_type = str(loss_config["type"])
+    if loss_type == "torch.nn.HuberLoss":
+        loss: nn.Module = nn.HuberLoss(
+            delta=float(loss_config["delta"]),
+            reduction=str(loss_config["reduction"]),
+        )
+    elif loss_type == "torch.nn.MSELoss":
+        loss = nn.MSELoss(reduction=str(loss_config["reduction"]))
+    else:
+        raise ValueError(f"Unsupported LSTM loss: {loss_type}")
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
         T_max=int(training_config["max_epochs"]),
@@ -257,6 +263,13 @@ def fit_lstm(
         model,
         training_config=training_config,
     )
+    loss_type = str(training_config["loss"]["type"])
+    loss_name = "huber" if loss_type == "torch.nn.HuberLoss" else "mse"
+    expected_monitor = f"validation_{loss_name}_loss"
+    if training_config["early_stopping"]["monitor"] != expected_monitor:
+        raise ValueError(
+            f"Early-stopping monitor must match the configured loss: {expected_monitor}"
+        )
     max_epochs = int(training_config["max_epochs"])
     patience = int(training_config["early_stopping"]["patience"])
     max_norm = float(training_config["gradient_clipping"]["max_norm"])
@@ -305,8 +318,8 @@ def fit_lstm(
             {
                 "epoch": epoch,
                 "learning_rate": float(optimizer.param_groups[0]["lr"]),
-                "train_huber_loss": train_loss,
-                "validation_huber_loss": validation_loss,
+                f"train_{loss_name}_loss": train_loss,
+                f"validation_{loss_name}_loss": validation_loss,
             }
         )
         if validation_loss < best_loss:
