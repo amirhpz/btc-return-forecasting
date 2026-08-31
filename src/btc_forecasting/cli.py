@@ -240,6 +240,32 @@ def _run_lstm_baseline(root: Path) -> int:
     return 0
 
 
+def _diagnose_lstm_distribution(root: Path, source_run: Path) -> int:
+    from btc_forecasting.training.lstm_diagnostics import (
+        run_prediction_distribution_diagnostic,
+    )
+
+    result = run_prediction_distribution_diagnostic(
+        project_root=root,
+        source_run=source_run,
+    )
+    print(json.dumps(result.result, indent=2, sort_keys=True))
+    print(f"artifact={result.artifact_path.relative_to(root)}")
+    return 0
+
+
+def _diagnose_lstm_overfit(root: Path, source_run: Path) -> int:
+    from btc_forecasting.training.lstm_diagnostics import run_overfit_sanity_diagnostic
+
+    result = run_overfit_sanity_diagnostic(
+        project_root=root,
+        source_run=source_run,
+    )
+    print(json.dumps(result.result, indent=2, sort_keys=True))
+    print(f"artifact={result.artifact_path.relative_to(root)}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="btc-forecast")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -263,6 +289,10 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("run-zero-return-baseline")
     subparsers.add_parser("run-ridge-baseline")
     subparsers.add_parser("run-lstm-baseline")
+    diagnose_distribution = subparsers.add_parser("diagnose-lstm-distribution")
+    diagnose_distribution.add_argument("--source-run", type=Path, required=True)
+    diagnose_overfit = subparsers.add_parser("diagnose-lstm-overfit")
+    diagnose_overfit.add_argument("--source-run", type=Path, required=True)
     return parser
 
 
@@ -290,5 +320,9 @@ def main(argv: list[str] | None = None) -> None:
         "run-zero-return-baseline": lambda: _run_zero_return_baseline(root),
         "run-ridge-baseline": lambda: _run_ridge_baseline(root),
         "run-lstm-baseline": lambda: _run_lstm_baseline(root),
+        "diagnose-lstm-distribution": lambda: _diagnose_lstm_distribution(
+            root, args.source_run
+        ),
+        "diagnose-lstm-overfit": lambda: _diagnose_lstm_overfit(root, args.source_run),
     }
     raise SystemExit(commands[args.command]())
