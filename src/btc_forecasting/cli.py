@@ -275,6 +275,20 @@ def _diagnose_lstm_overfit(root: Path, source_run: Path) -> int:
     return 0
 
 
+def _diagnose_lstm_generalization(root: Path, source_run: Path) -> int:
+    from btc_forecasting.training.lstm_generalization import (
+        run_lstm_generalization_diagnostic,
+    )
+
+    result = run_lstm_generalization_diagnostic(
+        project_root=root,
+        source_run=source_run,
+    )
+    print(json.dumps(result.result, indent=2, sort_keys=True))
+    print(f"artifact={result.artifact_path.relative_to(root)}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="btc-forecast")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -303,6 +317,8 @@ def build_parser() -> argparse.ArgumentParser:
     diagnose_distribution.add_argument("--source-run", type=Path, required=True)
     diagnose_overfit = subparsers.add_parser("diagnose-lstm-overfit")
     diagnose_overfit.add_argument("--source-run", type=Path, required=True)
+    diagnose_generalization = subparsers.add_parser("diagnose-lstm-generalization")
+    diagnose_generalization.add_argument("--source-run", type=Path, required=True)
     return parser
 
 
@@ -335,5 +351,8 @@ def main(argv: list[str] | None = None) -> None:
             root, args.source_run
         ),
         "diagnose-lstm-overfit": lambda: _diagnose_lstm_overfit(root, args.source_run),
+        "diagnose-lstm-generalization": lambda: _diagnose_lstm_generalization(
+            root, args.source_run
+        ),
     }
     raise SystemExit(commands[args.command]())
