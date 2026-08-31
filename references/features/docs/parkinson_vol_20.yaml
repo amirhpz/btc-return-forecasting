@@ -1,0 +1,42 @@
+schema_version: 1
+feature:
+  id: parkinson_vol_20
+  version: 1.0.0
+  status: validated
+  category: volatility
+  module: features.parkinson_vol_20
+  implementation_file: features/parkinson_vol_20.py
+  callable: compute
+  output_column: parkinson_vol_20
+  mode: positive
+  description: Computes the 20-bar Parkinson high-low volatility estimator from completed candles.
+formula: sqrt(mean_20(ln(high/low)^2) / (4*ln(2)))
+parameters:
+  window: 20
+data_contract:
+  required_columns:
+  - high
+  - low
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 20
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Higher values indicate greater intrabar high-low volatility.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

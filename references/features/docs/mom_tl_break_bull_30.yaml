@@ -1,0 +1,47 @@
+schema_version: 1
+feature:
+  id: mom_tl_break_bull_30
+  version: 1.0.0
+  status: validated
+  category: breakout
+  module: features.mom_tl_break_bull_30
+  implementation_file: features/mom_tl_break_bull_30.py
+  callable: compute
+  output_column: mom_tl_break_bull_30
+  mode: binary
+  description: Emits a bullish event when the last completed close crosses above a descending resistance line formed
+    by the latest two confirmed pivot highs.
+formula: I[close[t-2] <= projected_line[t-2] and close[t-1] > projected_line[t-1]]
+parameters:
+  pivot_left_bars: 3
+  pivot_right_bars: 1
+  maximum_pivot_age: 30
+  minimum_pivot_separation: 3
+data_contract:
+  required_columns:
+  - high
+  - close
+  - datetime
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 0
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: 1.0
+  interpretation: One marks a confirmed bullish trendline breakout; zero means no event.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: binary
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

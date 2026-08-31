@@ -1,0 +1,44 @@
+schema_version: 1
+feature:
+  id: mom_stoch_rsi_14_14_3
+  version: 1.0.0
+  status: validated
+  category: momentum
+  module: features.mom_stoch_rsi_14_14_3
+  implementation_file: features/mom_stoch_rsi_14_14_3.py
+  callable: compute
+  output_column: mom_stoch_rsi_14_14_3
+  mode: positive
+  description: Computes a 3-bar smoothed Stochastic RSI from a 14-period Wilder RSI and a 14-period stochastic window.
+formula: SMA_3((RSI_14[t] - min_14(RSI_14)) / (max_14(RSI_14) - min_14(RSI_14)))
+parameters:
+  rsi_period: 14
+  stochastic_period: 14
+  smoothing_period: 3
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 30
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: 1.0
+  interpretation: Values near 1 indicate RSI near its recent maximum; values near 0 indicate RSI near its recent
+    minimum.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

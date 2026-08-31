@@ -1,0 +1,41 @@
+schema_version: 1
+feature:
+  id: sign_flip_rate_20
+  version: 1.0.0
+  status: validated
+  category: market_regime
+  module: features.sign_flip_rate_20
+  implementation_file: features/sign_flip_rate_20.py
+  callable: compute
+  output_column: sign_flip_rate_20
+  mode: positive
+  description: Measures how frequently the sign of completed log returns changes over the latest 20 observations.
+formula: mean_20(I[sign(return[t]) * sign(return[t-1]) < 0])
+parameters:
+  window: 20
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 19
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: 1.0
+  interpretation: Higher values indicate choppier direction changes; lower values indicate directional persistence.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

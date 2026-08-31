@@ -1,0 +1,45 @@
+schema_version: 1
+feature:
+  id: ema_gap_atr_20
+  version: 1.0.0
+  status: validated
+  category: trend
+  module: features.ema_gap_atr_20
+  implementation_file: features/ema_gap_atr_20.py
+  callable: compute
+  output_column: ema_gap_atr_20
+  mode: signed
+  description: Measures the distance between the last completed close and its 20-span EMA in ATR units.
+formula: (close[t-1] - EMA_20(close.shift(1))[t]) / (ATR_14_shift1[t] + EPS)
+parameters:
+  ema_span: 20
+  atr_period: 14
+  ema_adjust: false
+data_contract:
+  required_columns:
+  - close
+  - high
+  - low
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 20
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: null
+    maximum: null
+  interpretation: Positive values place price above the EMA; negative values place it below.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: signed
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

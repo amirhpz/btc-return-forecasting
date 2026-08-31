@@ -1,0 +1,46 @@
+schema_version: 1
+feature:
+  id: vol_of_vol_ratio_20
+  version: 1.0.0
+  status: validated
+  category: volatility_regime
+  module: features.vol_of_vol_ratio_20
+  implementation_file: features/vol_of_vol_ratio_20.py
+  callable: compute
+  output_column: vol_of_vol_ratio_20
+  mode: positive
+  description: Measures variation in the TR-to-ATR ratio relative to its 20-span EMA level.
+formula: std_20(TR/ATR, ddof=0) / (EMA_20(TR/ATR) + EPS)
+parameters:
+  atr_period: 14
+  window: 20
+  std_ddof: 0
+  ema_span: 20
+data_contract:
+  required_columns:
+  - high
+  - low
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 34
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Higher values indicate a less stable short-term volatility regime.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

@@ -1,0 +1,44 @@
+schema_version: 1
+feature:
+  id: vol_ratio_20_100
+  version: 1.0.0
+  status: validated
+  category: volume_regime
+  module: features.vol_ratio_20_100
+  implementation_file: features/vol_ratio_20_100.py
+  callable: compute
+  output_column: vol_ratio_20_100
+  mode: positive
+  description: Compares the 20-span EMA of completed volume with its 100-span EMA.
+formula: EMA_20(volume.shift(1))[t] / (EMA_100(volume.shift(1))[t] + EPS)
+parameters:
+  fast_ema_span: 20
+  slow_ema_span: 100
+  ema_adjust: false
+data_contract:
+  required_columns:
+  - volume
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 100
+  volume_requirement: same_volume_definition_in_training_and_metatrader
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Values above 1 indicate short-term volume is elevated relative to the long-term baseline.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes:
+- Volume definition must be identical in training and live inference.

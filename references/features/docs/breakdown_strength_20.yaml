@@ -1,0 +1,44 @@
+schema_version: 1
+feature:
+  id: breakdown_strength_20
+  version: 1.0.0
+  status: validated
+  category: breakout
+  module: features.breakdown_strength_20
+  implementation_file: features/breakdown_strength_20.py
+  callable: compute
+  output_column: breakdown_strength_20
+  mode: sparse_positive
+  description: Measures how far the last completed close broke below the preceding 20-bar low, scaled by ATR.
+formula: max(min(low[t-21:t-1]) - close[t-1], 0) / (ATR_14_shift1[t] + EPS)
+parameters:
+  lookback: 20
+  atr_period: 14
+data_contract:
+  required_columns:
+  - low
+  - close
+  - high
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 21
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Zero means no downside breakdown; larger values indicate a deeper ATR-scaled breakdown.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: sparse_positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

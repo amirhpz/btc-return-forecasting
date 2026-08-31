@@ -1,0 +1,45 @@
+schema_version: 1
+feature:
+  id: cand_up_down_vol_ratio_20
+  version: 1.0.0
+  status: validated
+  category: volume_flow
+  module: features.cand_up_down_vol_ratio_20
+  implementation_file: features/cand_up_down_vol_ratio_20.py
+  callable: compute
+  output_column: cand_up_down_vol_ratio_20
+  mode: positive
+  description: Compares volume on up-closing bars with volume on down-closing bars over the latest 20 completed
+    bars.
+formula: sum_20(volume[t-1] where close[t-1] > close[t-2]) / (sum_20(volume[t-1] where close[t-1] < close[t-2])
+  + EPS)
+parameters:
+  window: 20
+data_contract:
+  required_columns:
+  - close
+  - volume
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 19
+  volume_requirement: same_volume_definition_in_training_and_metatrader
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Values above 1 indicate greater volume on rising closes than on falling closes.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes:
+- Volume definition must be identical in training and live inference.

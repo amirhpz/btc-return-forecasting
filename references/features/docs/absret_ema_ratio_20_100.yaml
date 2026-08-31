@@ -1,0 +1,44 @@
+schema_version: 1
+feature:
+  id: absret_ema_ratio_20_100
+  version: 1.0.0
+  status: validated
+  category: volatility_regime
+  module: features.absret_ema_ratio_20_100
+  implementation_file: features/absret_ema_ratio_20_100.py
+  callable: compute
+  output_column: absret_ema_ratio_20_100
+  mode: positive
+  description: Measures short-term volatility acceleration as the ratio of fast and slow EMAs of absolute log returns.
+formula: EMA_20(|ln(close[t-1] / close[t-2])|) / (EMA_100(|ln(close[t-1] / close[t-2])|) + EPS)
+parameters:
+  fast_span: 20
+  slow_span: 100
+  ema_adjust: false
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 101
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Values above 1 indicate recent absolute-return volatility is elevated relative to its longer-term
+    baseline.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

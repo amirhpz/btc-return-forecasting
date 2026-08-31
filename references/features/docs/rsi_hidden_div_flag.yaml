@@ -1,0 +1,49 @@
+schema_version: 1
+feature:
+  id: rsi_hidden_div_flag
+  version: 1.0.0
+  status: validated
+  category: divergence
+  module: features.rsi_hidden_div_flag
+  implementation_file: features/rsi_hidden_div_flag.py
+  callable: compute
+  output_column: rsi_hidden_div_flag
+  mode: ternary
+  description: Emits a ternary hidden RSI divergence state from confirmed price pivots and a trend filter.
+formula: 1 for bullish hidden divergence, -1 for bearish hidden divergence, otherwise 0
+parameters:
+  rsi_period: 14
+  pivot_k: 3
+  maximum_pivot_age: 60
+  minimum_pivot_separation: 5
+  trend_filter: true
+  trend_length: 50
+data_contract:
+  required_columns:
+  - high
+  - low
+  - close
+  - datetime
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 0
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: -1.0
+    maximum: 1.0
+  interpretation: One is bullish hidden divergence, minus one is bearish hidden divergence, and zero is neutral.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: ternary
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

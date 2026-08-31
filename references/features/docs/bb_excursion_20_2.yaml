@@ -1,0 +1,46 @@
+schema_version: 1
+feature:
+  id: bb_excursion_20_2
+  version: 1.0.0
+  status: validated
+  category: breakout
+  module: features.bb_excursion_20_2
+  implementation_file: features/bb_excursion_20_2.py
+  callable: compute
+  output_column: bb_excursion_20_2
+  mode: sparse_signed
+  description: Measures only the signed portion of a completed close that lies outside its 20-period, 2-sigma Bollinger
+    Bands.
+formula: min(percent_b, 0) + max(percent_b - 1, 0)
+parameters:
+  period: 20
+  standard_deviation_multiplier: 2.0
+  std_ddof: 0
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 20
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: null
+    maximum: null
+  interpretation: Zero means price is inside the bands; positive and negative values measure upper- and lower-band
+    excursions in band-width units.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: sparse_signed
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes:
+- Replaces the legacy percent_b_20 feature to remove a clipped linear duplicate of band_bb_percB_20_2.

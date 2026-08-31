@@ -1,0 +1,44 @@
+schema_version: 1
+feature:
+  id: atr_ratio_14_63
+  version: 1.0.0
+  status: validated
+  category: volatility_regime
+  module: features.atr_ratio_14_63
+  implementation_file: features/atr_ratio_14_63.py
+  callable: compute
+  output_column: atr_ratio_14_63
+  mode: positive
+  description: Compares short-horizon ATR with long-horizon ATR to identify volatility regime expansion or contraction.
+formula: ATR_14_shift1[t] / (ATR_63_shift1[t] + EPS)
+parameters:
+  fast_atr_period: 14
+  slow_atr_period: 63
+data_contract:
+  required_columns:
+  - high
+  - low
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 64
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Values above 1 indicate short-term volatility exceeds the longer-term baseline.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

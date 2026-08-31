@@ -1,0 +1,47 @@
+schema_version: 1
+feature:
+  id: macd_hist_atr
+  version: 1.0.0
+  status: validated
+  category: momentum
+  module: features.macd_hist_atr
+  implementation_file: features/macd_hist_atr.py
+  callable: compute
+  output_column: macd_hist_atr
+  mode: signed
+  description: Scales the standard 12/26/9 MACD histogram of completed closes by ATR.
+formula: (MACD_12_26[t] - EMA_9(MACD_12_26)[t]) / (ATR_14_shift1[t] + EPS)
+parameters:
+  fast_ema_span: 12
+  slow_ema_span: 26
+  signal_ema_span: 9
+  atr_period: 14
+  ema_adjust: false
+data_contract:
+  required_columns:
+  - close
+  - high
+  - low
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 34
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: null
+    maximum: null
+  interpretation: Positive values indicate bullish momentum acceleration; negative values indicate bearish acceleration.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: signed
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

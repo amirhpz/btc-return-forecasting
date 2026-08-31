@@ -1,0 +1,41 @@
+schema_version: 1
+feature:
+  id: upside_semivol_20
+  version: 1.0.0
+  status: validated
+  category: volatility
+  module: features.upside_semivol_20
+  implementation_file: features/upside_semivol_20.py
+  callable: compute
+  output_column: upside_semivol_20
+  mode: positive
+  description: Computes the root mean square of positive log returns over the latest 20 completed return observations.
+formula: sqrt(mean_20(max(ln(close[t-1]/close[t-2]), 0)^2))
+parameters:
+  window: 20
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 21
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Higher values indicate stronger upside return dispersion.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

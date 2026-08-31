@@ -1,0 +1,41 @@
+schema_version: 1
+feature:
+  id: inside_bar_compression
+  version: 1.0.0
+  status: validated
+  category: candlestick_pattern
+  module: features.inside_bar_compression
+  implementation_file: features/inside_bar_compression.py
+  callable: compute
+  output_column: inside_bar_compression
+  mode: sparse_positive
+  description: Scores how tightly the last completed inside bar is compressed within its mother bar.
+formula: I[high[t-1] <= high[t-2] and low[t-1] >= low[t-2]] * (1 - range[t-1]/range[t-2])
+parameters: {}
+data_contract:
+  required_columns:
+  - high
+  - low
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 0
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: 1.0
+  interpretation: Zero means no valid inside bar; larger values indicate tighter compression.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: sparse_positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

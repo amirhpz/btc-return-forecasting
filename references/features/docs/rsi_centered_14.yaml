@@ -1,0 +1,41 @@
+schema_version: 1
+feature:
+  id: rsi_centered_14
+  version: 1.0.0
+  status: validated
+  category: momentum
+  module: features.rsi_centered_14
+  implementation_file: features/rsi_centered_14.py
+  callable: compute
+  output_column: rsi_centered_14
+  mode: signed
+  description: Centers the 14-period Wilder RSI around zero for signed model input.
+formula: RSI_14(close.shift(1))[t] / 100 - 0.5
+parameters:
+  rsi_period: 14
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 15
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: -0.5
+    maximum: 0.5
+  interpretation: Positive values indicate RSI above 50; negative values indicate RSI below 50.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: signed
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

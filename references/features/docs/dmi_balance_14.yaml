@@ -1,0 +1,47 @@
+schema_version: 1
+feature:
+  id: dmi_balance_14
+  version: 1.0.0
+  status: validated
+  category: trend
+  module: features.dmi_balance_14
+  implementation_file: features/dmi_balance_14.py
+  callable: compute
+  output_column: dmi_balance_14
+  mode: signed
+  description: Computes a normalized directional-movement balance between positive and negative directional indicators.
+formula: (DI_plus_14[t] - DI_minus_14[t]) / (DI_plus_14[t] + DI_minus_14[t] + EPS)
+parameters:
+  period: 14
+  dm_smoothing: ewm_alpha_1_over_period
+  atr_alignment: native_mt5_sma_shift1
+data_contract:
+  required_columns:
+  - high
+  - low
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 15
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: -1.0
+    maximum: 1.0
+  interpretation: Positive values favor upward directional movement; negative values favor downward directional
+    movement.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: signed
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes:
+- This is a documented custom balance feature and is not claimed to equal the native MT5 ADX/DI buffers.

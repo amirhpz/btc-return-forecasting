@@ -1,0 +1,43 @@
+schema_version: 1
+feature:
+  id: outside_bar_expansion
+  version: 1.0.0
+  status: validated
+  category: candlestick_pattern
+  module: features.outside_bar_expansion
+  implementation_file: features/outside_bar_expansion.py
+  callable: compute
+  output_column: outside_bar_expansion
+  mode: sparse_positive
+  description: Scores a completed outside bar by its full candle range relative to ATR.
+formula: I[high[t-1] >= high[t-2] and low[t-1] <= low[t-2]] * (high[t-1]-low[t-1]) / (ATR_14_shift1[t] + EPS)
+parameters:
+  atr_period: 14
+data_contract:
+  required_columns:
+  - high
+  - low
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 15
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Zero means no outside-bar event; larger values indicate stronger range expansion.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: sparse_positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

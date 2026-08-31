@@ -1,0 +1,41 @@
+schema_version: 1
+feature:
+  id: roc_10
+  version: 1.0.0
+  status: validated
+  category: momentum
+  module: features.roc_10
+  implementation_file: features/roc_10.py
+  callable: compute
+  output_column: roc_10
+  mode: signed
+  description: Computes the 10-bar rate of change of completed closing prices.
+formula: close[t-1] / close[t-11] - 1
+parameters:
+  lookback: 10
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 11
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: -1.0
+    maximum: null
+  interpretation: Positive values indicate price appreciation over ten bars; negative values indicate depreciation.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: signed
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

@@ -1,0 +1,43 @@
+schema_version: 1
+feature:
+  id: channel_pos_20
+  version: 1.0.0
+  status: validated
+  category: price_position
+  module: features.channel_pos_20
+  implementation_file: features/channel_pos_20.py
+  callable: compute
+  output_column: channel_pos_20
+  mode: positive
+  description: Locates the last completed close within the high-low channel of the latest 20 completed bars.
+formula: (close[t-1] - min(low[t-20:t])) / (max(high[t-20:t]) - min(low[t-20:t]) + EPS)
+parameters:
+  window: 20
+data_contract:
+  required_columns:
+  - high
+  - low
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 20
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: 1.0
+  interpretation: Zero is the channel bottom and one is the channel top.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

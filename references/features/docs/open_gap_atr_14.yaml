@@ -1,0 +1,46 @@
+schema_version: 1
+feature:
+  id: open_gap_atr_14
+  version: 1.0.0
+  status: validated
+  category: market_open_state
+  module: features.open_gap_atr_14
+  implementation_file: features/open_gap_atr_14.py
+  callable: compute
+  output_column: open_gap_atr_14
+  mode: sparse_signed
+  description: Measures the current bar opening gap from the previous close in ATR units.
+formula: (open[t] - close[t-1]) / (ATR_14_shift1[t] + EPS)
+parameters:
+  atr_period: 14
+data_contract:
+  required_columns:
+  - open
+  - high
+  - low
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: true
+  current_bar_fields:
+  - open
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 15
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: null
+    maximum: null
+  interpretation: Positive values indicate an upward opening gap; negative values indicate a downward gap.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: sparse_signed
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes:
+- This is the only feature intentionally allowed to use a current-bar field because open[t] is known at bar open.

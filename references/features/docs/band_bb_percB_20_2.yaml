@@ -1,0 +1,44 @@
+schema_version: 1
+feature:
+  id: band_bb_percB_20_2
+  version: 1.0.0
+  status: validated
+  category: price_position
+  module: features.band_bb_percB_20_2
+  implementation_file: features/band_bb_percB_20_2.py
+  callable: compute
+  output_column: band_bb_percB_20_2
+  mode: signed
+  description: Computes unbounded Bollinger Percent-B from completed closes while preserving outside-band magnitude.
+formula: (close[t-1] - lower_20_2[t]) / (upper_20_2[t] - lower_20_2[t])
+parameters:
+  period: 20
+  standard_deviation_multiplier: 2.0
+  std_ddof: 0
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 20
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: null
+    maximum: null
+  interpretation: Values between 0 and 1 lie inside the bands; values below 0 or above 1 indicate lower- or upper-band
+    excursions.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: signed
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

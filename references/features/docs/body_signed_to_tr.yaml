@@ -1,0 +1,44 @@
+schema_version: 1
+feature:
+  id: body_signed_to_tr
+  version: 1.0.0
+  status: validated
+  category: candlestick_structure
+  module: features.body_signed_to_tr
+  implementation_file: features/body_signed_to_tr.py
+  callable: compute
+  output_column: body_signed_to_tr
+  mode: signed
+  description: Measures the signed body of the last completed candle relative to its True Range.
+formula: clip((close[t-1] - open[t-1]) / (TR[t-1] + EPS), -1, 1)
+parameters: {}
+data_contract:
+  required_columns:
+  - open
+  - high
+  - low
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 1
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: -1.0
+    maximum: 1.0
+  interpretation: Positive values indicate bullish bodies, negative values indicate bearish bodies, and magnitude
+    reflects body dominance within True Range.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: signed
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

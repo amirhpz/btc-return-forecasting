@@ -1,0 +1,42 @@
+schema_version: 1
+feature:
+  id: drawdown_from_peak_60
+  version: 1.0.0
+  status: validated
+  category: risk_state
+  module: features.drawdown_from_peak_60
+  implementation_file: features/drawdown_from_peak_60.py
+  callable: compute
+  output_column: drawdown_from_peak_60
+  mode: positive
+  description: Measures the fractional drawdown of the last completed close from the highest completed close in
+    the latest 60 bars.
+formula: (max_60(close[t-1]) - close[t-1]) / (max_60(close[t-1]) + EPS)
+parameters:
+  window: 60
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 60
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: 1.0
+  interpretation: Zero indicates the rolling peak; larger values indicate a deeper drawdown.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

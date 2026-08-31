@@ -1,0 +1,41 @@
+schema_version: 1
+feature:
+  id: efficiency_ratio_20
+  version: 1.0.0
+  status: validated
+  category: trend_quality
+  module: features.efficiency_ratio_20
+  implementation_file: features/efficiency_ratio_20.py
+  callable: compute
+  output_column: efficiency_ratio_20
+  mode: positive
+  description: Measures directional efficiency as net movement divided by total path length over 20 completed intervals.
+formula: '|close[t-1] - close[t-21]| / (sum_20(|delta close|) + EPS)'
+parameters:
+  window: 20
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 21
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: 1.0
+  interpretation: Values near 1 indicate a smooth directional path; values near 0 indicate choppy movement.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

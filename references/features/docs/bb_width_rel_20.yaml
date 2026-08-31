@@ -1,0 +1,43 @@
+schema_version: 1
+feature:
+  id: bb_width_rel_20
+  version: 1.0.0
+  status: validated
+  category: volatility
+  module: features.bb_width_rel_20
+  implementation_file: features/bb_width_rel_20.py
+  callable: compute
+  output_column: bb_width_rel_20
+  mode: positive
+  description: Measures Bollinger Band width relative to the 20-period middle band.
+formula: (upper_20_2[t] - lower_20_2[t]) / middle_20[t]
+parameters:
+  period: 20
+  standard_deviation_multiplier: 2.0
+  std_ddof: 0
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 20
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Higher values indicate wider bands and greater recent dispersion.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

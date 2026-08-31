@@ -1,0 +1,43 @@
+schema_version: 1
+feature:
+  id: return_skew_30
+  version: 1.0.0
+  status: validated
+  category: return_distribution
+  module: features.return_skew_30
+  implementation_file: features/return_skew_30.py
+  callable: compute
+  output_column: return_skew_30
+  mode: signed
+  description: Computes rolling sample skewness of the latest 30 completed log returns.
+formula: skew_30(ln(close[t-1]/close[t-2]))
+parameters:
+  window: 30
+  degenerate_window_value: 0.0
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 31
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: null
+    maximum: null
+  interpretation: Positive values indicate a longer right tail; negative values indicate a longer left tail.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: signed
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes:
+- A mature near-zero-variance window is assigned neutral skewness 0 instead of NaN.

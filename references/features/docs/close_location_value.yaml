@@ -1,0 +1,43 @@
+schema_version: 1
+feature:
+  id: close_location_value
+  version: 1.0.0
+  status: validated
+  category: candlestick_structure
+  module: features.close_location_value
+  implementation_file: features/close_location_value.py
+  callable: compute
+  output_column: close_location_value
+  mode: signed
+  description: Computes the classical signed Close Location Value for the last completed candle.
+formula: ((close[t-1]-low[t-1]) - (high[t-1]-close[t-1])) / (high[t-1]-low[t-1])
+parameters: {}
+data_contract:
+  required_columns:
+  - high
+  - low
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 1
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: -1.0
+    maximum: 1.0
+  interpretation: One means close at the high, minus one means close at the low, and zero is the midpoint or a flat
+    candle.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: signed
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

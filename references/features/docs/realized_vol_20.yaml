@@ -1,0 +1,42 @@
+schema_version: 1
+feature:
+  id: realized_vol_20
+  version: 1.0.0
+  status: validated
+  category: volatility
+  module: features.realized_vol_20
+  implementation_file: features/realized_vol_20.py
+  callable: compute
+  output_column: realized_vol_20
+  mode: positive
+  description: Computes the population standard deviation of 20 completed one-bar log returns.
+formula: std_20(ln(close[t-1]/close[t-2]), ddof=0)
+parameters:
+  window: 20
+  std_ddof: 0
+data_contract:
+  required_columns:
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 21
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Higher values indicate greater close-to-close return volatility.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

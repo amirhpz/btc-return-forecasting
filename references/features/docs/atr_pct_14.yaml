@@ -1,0 +1,43 @@
+schema_version: 1
+feature:
+  id: atr_pct_14
+  version: 1.0.0
+  status: validated
+  category: volatility
+  module: features.atr_pct_14
+  implementation_file: features/atr_pct_14.py
+  callable: compute
+  output_column: atr_pct_14
+  mode: positive
+  description: Expresses the native MT5-compatible 14-bar ATR as a fraction of the last completed close.
+formula: ATR_14_shift1[t] / (close[t-1] + EPS)
+parameters:
+  atr_period: 14
+data_contract:
+  required_columns:
+  - high
+  - low
+  - close
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 15
+  volume_requirement: null
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Higher values indicate greater recent true-range volatility relative to price.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes: []

@@ -1,0 +1,44 @@
+schema_version: 1
+feature:
+  id: dollar_vol_rel_20
+  version: 1.0.0
+  status: validated
+  category: liquidity
+  module: features.dollar_vol_rel_20
+  implementation_file: features/dollar_vol_rel_20.py
+  callable: compute
+  output_column: dollar_vol_rel_20
+  mode: positive
+  description: Measures last-bar quote notional volume relative to its 20-span EMA.
+formula: (close[t-1] * volume[t-1]) / (EMA_20(close*volume)[t] + EPS)
+parameters:
+  ema_span: 20
+  ema_adjust: false
+data_contract:
+  required_columns:
+  - close
+  - volume
+  evaluation_time: bar_open
+  uses_current_bar: false
+  current_bar_fields: []
+  uses_future_data: false
+  requires_chronological_input: true
+  expected_leading_warmup_rows: 20
+  volume_requirement: base_asset_traded_volume_consistent_between_train_and_live
+output_contract:
+  native_range:
+    minimum: 0.0
+    maximum: null
+  interpretation: Values above 1 indicate above-baseline traded notional.
+  missing_value_policy: leading_warmup_only
+normalization:
+  mode: positive
+  fit_scope: train_only_per_symbol
+validation:
+  compile_ok: true
+  index_preserved: true
+  prefix_causal: true
+  future_perturbation_invariant: true
+  current_bar_policy_verified: true
+notes:
+- Requires base-asset traded volume so close multiplied by volume represents quote notional.
