@@ -1,1 +1,1 @@
-"""Models package. Implement only in its approved phase."""
+"""Forecasting model definitions."""

@@ -1,7 +1,7 @@
 experiment:
   id: E03
   name: lstm_1h_f0
-  status: blocked_until_E02_passes
+  status: ready_for_training
   stage: development
   timeframe: 1h
   lookback: 24h
@@ -10,4 +10,5 @@ experiment:
   model: B2
   evaluation_split: validation
   seed: 42
+  training_protocol: deep_training_v1
   changes_from_previous: model_only

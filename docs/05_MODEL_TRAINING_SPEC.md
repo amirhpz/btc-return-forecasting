@@ -33,20 +33,28 @@ Input [batch, time, features]
 
 No attention is permitted in the initial benchmark.
 
-## Fixed Training Configuration
+## Deep Training Protocol v1
+
+The exact model and training semantics are frozen in
+`configs/models/lstm.yaml` and `configs/training.yaml`. E03 uses CUDA and must
+fail clearly when CUDA is unavailable.
 
 ```text
 optimizer       Adam
 learning rate   0.001
-loss            Huber
+loss            torch.nn.HuberLoss, delta 0.01, mean reduction
 batch size      128
 max epochs      30
 early stopping  patience 5
 feature scaler  RobustScaler, train only
-target scaler   StandardScaler, train only
+target scaler   none; use the unscaled one-hour log-return
 ```
 
-The checkpoint is selected by validation RMSE after inverse-transforming the target.
+The checkpoint is selected by strict improvement in validation Huber loss and
+the best-validation-loss checkpoint is restored. The frozen protocol also
+specifies the LSTM readout, optimizer defaults, batching, determinism, gradient
+clipping, and cosine-annealing scheduler without changing the existing numerical
+model or training hyperparameters.
 
 ## Reproducibility
 

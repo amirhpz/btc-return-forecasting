@@ -3,6 +3,17 @@ model:
   family: lstm
   hidden_size: 64
   num_layers: 1
-  head_dropout: 0.20
+  dropout: 0.20
+  dropout_semantics: inter_layer_only_when_num_layers_gt_1
   bidirectional: false
   output_size: 1
+  readout:
+    state: final_hidden_state_of_top_layer
+    expression: h_n[-1]
+    carry_state_between_batches: false
+  regression_head:
+    type: linear
+    in_features: hidden_size
+    out_features: 1
+    activation: none
+    additional_dropout: none

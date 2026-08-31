@@ -1,22 +1,68 @@
 training:
-  optimizer: adam
-  learning_rate: 0.001
-  loss: huber
+  protocol_version: deep_training_v1
+  device:
+    official: cuda
+    require_available: true
+    run_metadata:
+      - actual_device
+      - gpu_name
+  optimizer:
+    type: adam
+    learning_rate: 0.001
+    betas: [0.9, 0.999]
+    eps: 1.0e-8
+    weight_decay: 0.0
+    amsgrad: false
+  loss:
+    type: torch.nn.HuberLoss
+    delta: 0.01
+    reduction: mean
+    target_scale: unscaled_one_hour_log_return
   batch_size: 128
+  data_loader:
+    num_workers: 0
+    generator_seed: experiment_seed
+    train:
+      shuffle: true
+      drop_last: false
+    validation:
+      shuffle: false
+      drop_last: false
   max_epochs: 30
   early_stopping:
     enabled: true
     patience: 5
-    monitor: validation_rmse_original_target_scale
+    monitor: validation_huber_loss
     mode: min
-  gradient_clip_norm: 1.0
+    min_delta: 0.0
+    improvement: strict
+    equal_is_improvement: false
+    bad_epoch_increment: every_non_improving_epoch
+    stop_condition: bad_epochs_greater_than_or_equal_to_patience
+    restore: best_validation_loss_checkpoint
+  gradient_clipping:
+    max_norm: 1.0
+    norm_type: 2.0
+  scheduler:
+    type: torch.optim.lr_scheduler.CosineAnnealingLR
+    T_max: configured_max_epochs
+    eta_min: 0.0
+    step: end_of_each_completed_training_epoch
   feature_scaler:
     type: robust
     fit_scope: train_only
   target_scaler:
-    type: standard
-    fit_scope: train_only
-  deterministic_debug: true
+    type: none
+    fit_scope: not_applicable
+  determinism:
+    seed_sources:
+      - python_random
+      - numpy
+      - torch
+      - torch_cuda_manual_seed_all
+    seed_value: experiment_seed
+    torch_backends_cudnn_benchmark: false
+    torch_backends_cudnn_deterministic: true
+    stronger_deterministic_algorithms: false
   mixed_precision: false
-  num_workers_windows_default: 0
-  checkpoint_policy: best_validation_metric
+  checkpoint_policy: best_validation_loss
