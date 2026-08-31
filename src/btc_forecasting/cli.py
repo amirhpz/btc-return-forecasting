@@ -326,6 +326,20 @@ def _diagnose_vn_learning(root: Path, source_run: Path) -> int:
     return 0
 
 
+def _diagnose_vn_temporal(root: Path, source_run: Path) -> int:
+    from btc_forecasting.training.lstm_vn_temporal_diagnostic import (
+        run_vn_temporal_diagnostic,
+    )
+
+    result = run_vn_temporal_diagnostic(
+        project_root=root,
+        source_run=source_run,
+    )
+    print(json.dumps(result.result, indent=2, sort_keys=True))
+    print(f"artifact={result.artifact_path.relative_to(root)}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="btc-forecast")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -365,6 +379,10 @@ def build_parser() -> argparse.ArgumentParser:
         "diagnose-lstm-vn-learning"
     )
     diagnose_vn_learning.add_argument("--source-run", type=Path, required=True)
+    diagnose_vn_temporal = subparsers.add_parser(
+        "diagnose-lstm-vn-temporal"
+    )
+    diagnose_vn_temporal.add_argument("--source-run", type=Path, required=True)
     return parser
 
 
@@ -407,6 +425,9 @@ def main(argv: list[str] | None = None) -> None:
             _diagnose_volatility_normalization(root, args.source_run)
         ),
         "diagnose-lstm-vn-learning": lambda: _diagnose_vn_learning(
+            root, args.source_run
+        ),
+        "diagnose-lstm-vn-temporal": lambda: _diagnose_vn_temporal(
             root, args.source_run
         ),
     }
