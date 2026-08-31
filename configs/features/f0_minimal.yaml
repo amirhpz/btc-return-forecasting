@@ -3,6 +3,17 @@ feature_set:
   name: minimal_duration_based
   status: frozen
   design_rule: windows_are_real_time_durations_not_fixed_bar_counts
+  input_timeframe: 1h
+  alignment:
+    timestamp_column: open_time
+    feature_bar: t
+    decision_time: t_plus_1h
+    availability_rule: bar_t_must_be_complete
+  continuity:
+    required: true
+    expected_interval: 1h
+    rule: lagged_and_rolling_features_never_bridge_missing_hours
+  default_missing_value_rule: insufficient_or_nonconsecutive_history_is_missing
   features:
     - log_return_1h
     - log_return_3h
@@ -14,3 +25,87 @@ feature_set:
     - rolling_volatility_24h
     - log_volume_change_1h
     - relative_volume_24h
+  definitions:
+    - name: log_return_1h
+      formula: ln(close_t / close_t_minus_1h)
+      source_columns: [close]
+      parameters: {lag_hours: 1}
+      minimum_history: 1_previous_consecutive_hour
+      expected_leading_warmup_rows: 1
+      causal: true
+      missing_value_rule: missing_without_exact_consecutive_t_minus_1h
+    - name: log_return_3h
+      formula: ln(close_t / close_t_minus_3h)
+      source_columns: [close]
+      parameters: {lag_hours: 3}
+      minimum_history: 3_previous_consecutive_hours
+      expected_leading_warmup_rows: 3
+      causal: true
+      missing_value_rule: missing_without_complete_consecutive_t_minus_3h_through_t
+    - name: log_return_6h
+      formula: ln(close_t / close_t_minus_6h)
+      source_columns: [close]
+      parameters: {lag_hours: 6}
+      minimum_history: 6_previous_consecutive_hours
+      expected_leading_warmup_rows: 6
+      causal: true
+      missing_value_rule: missing_without_complete_consecutive_t_minus_6h_through_t
+    - name: candle_log_return
+      formula: ln(close_t / open_t)
+      source_columns: [open, close]
+      parameters: {}
+      minimum_history: current_completed_bar
+      expected_leading_warmup_rows: 0
+      causal: true
+      missing_value_rule: canonical_input_requires_finite_source_values
+    - name: high_low_range_pct
+      formula: (high_t - low_t) / close_t
+      source_columns: [high, low, close]
+      parameters: {}
+      minimum_history: current_completed_bar
+      expected_leading_warmup_rows: 0
+      causal: true
+      missing_value_rule: canonical_input_requires_finite_source_values
+    - name: close_position_in_range
+      formula: (close_t - low_t) / (high_t - low_t)
+      source_columns: [high, low, close]
+      parameters: {flat_range_value: 0.5}
+      minimum_history: current_completed_bar
+      expected_leading_warmup_rows: 0
+      causal: true
+      missing_value_rule: use_0.5_exactly_when_high_t_equals_low_t
+    - name: rolling_volatility_6h
+      formula: population_std_of_last_6_consecutive_log_return_1h_values_including_r_t
+      source_columns: [close]
+      parameters: {window_hours: 6, ddof: 0, includes_current_return: true}
+      minimum_history: 6_consecutive_returns_from_7_consecutive_bars
+      expected_leading_warmup_rows: 6
+      causal: true
+      missing_value_rule: missing_until_all_6_consecutive_returns_are_available
+    - name: rolling_volatility_24h
+      formula: population_std_of_last_24_consecutive_log_return_1h_values_including_r_t
+      source_columns: [close]
+      parameters: {window_hours: 24, ddof: 0, includes_current_return: true}
+      minimum_history: 24_consecutive_returns_from_25_consecutive_bars
+      expected_leading_warmup_rows: 24
+      causal: true
+      missing_value_rule: missing_until_all_24_consecutive_returns_are_available
+    - name: log_volume_change_1h
+      formula: log1p(volume_t) - log1p(volume_t_minus_1h)
+      source_columns: [volume]
+      parameters: {lag_hours: 1, transform: log1p}
+      minimum_history: 1_previous_consecutive_hour
+      expected_leading_warmup_rows: 1
+      causal: true
+      missing_value_rule: missing_without_exact_consecutive_t_minus_1h
+    - name: relative_volume_24h
+      formula: volume_t / mean(volume_t_minus_24h_through_volume_t_minus_1h)
+      source_columns: [volume]
+      parameters:
+        baseline_hours: 24
+        includes_current_volume_in_denominator: false
+        zero_denominator: missing
+      minimum_history: 24_previous_consecutive_hours
+      expected_leading_warmup_rows: 24
+      causal: true
+      missing_value_rule: missing_without_24_previous_consecutive_hours_or_when_denominator_is_exactly_zero
