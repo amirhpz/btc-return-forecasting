@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|---|---:|---|---|---|
 | E00 | | 2026-08-31 | btcusdt_5m_v001 / btcusdt_1h_v001 / btcusdt_1h_target_v001 | chronological_70_15_15_v001 | | | | none | COMPLETE | E00 data foundation complete: acquisition, validation, canonical 5m and 1h datasets, one-hour target, and leakage-safe frozen chronological split. |
 | E01 | E01_1h_F0_B0_20260831T070312Z | 2026-08-31 | btcusdt_1h_target_v001 | chronological_70_15_15_v001 | F0 | B0 | | train / validation | COMPLETE | Zero-return baseline established. Test set NOT EVALUATED. |
-| E02 | | | | | F0 | B1 | | validation | BLOCKED | |
+| E02 | E02_1h_F0_B1_20260831T083721Z | 2026-08-31 | btcusdt_1h_v001 / btcusdt_1h_target_v001 | chronological_70_15_15_v001 | F0 | B1 | | train / validation | COMPLETE | Fixed Ridge baseline evaluated with train-only scaling and same-row zero comparison. Test set NOT EVALUATED. |
 | E03 | | | | | F0 | B2 | 42 | validation | BLOCKED | |
 | E04 | | | | | F0 | B3 | 42 | validation | BLOCKED | |
 | E05 | | | | | F0 | B4 | 42 | validation | BLOCKED | |
@@ -208,3 +208,33 @@ Accuracy are not applicable to this constant-zero predictor.
 | Test set | NOT EVALUATED |
 | Targeted tests | 4 passed |
 | Artifact | `outputs/runs/E01_1h_F0_B0_20260831T070312Z/metrics.json` |
+
+## E02 — COMPLETE
+
+The fixed Ridge baseline used flattened `24 x 10` frozen F0 windows containing only consecutive
+real-hour bars. Feature and target scalers were fitted on train only. The zero-return comparison
+uses exactly the same eligible validation rows. The frozen test split was not evaluated.
+
+| Data result | Measured value |
+|---|---:|
+| Train eligible samples | 53,343 |
+| Validation eligible samples | 11,745 |
+| Train exclusions | 1,473 |
+| Validation exclusions | 0 |
+
+| Validation metric | Ridge | Same-row zero baseline |
+|---|---:|---:|
+| MAE | 0.003709077478482596 | 0.0036747470147978183 |
+| RMSE | 0.00565463293477432 | 0.0056077652587394914 |
+| R² | -0.016927556759288365 | N/A |
+| Pearson IC | 0.014493098766641647 | N/A |
+| Spearman RankIC | 0.030326232732912038 | N/A |
+| Directional Accuracy | 0.5120061307901907 | N/A |
+
+| Additional result | Measured value |
+|---|---:|
+| MAE skill | -0.009342265888381496 |
+| RMSE skill | -0.008357638715669635 |
+| Test set | NOT EVALUATED |
+| Targeted tests | 3 passed |
+| Artifact | `outputs/runs/E02_1h_F0_B1_20260831T083721Z/metrics.json` |
