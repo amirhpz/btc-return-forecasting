@@ -3,7 +3,7 @@
 | Experiment | Run ID | Date UTC | Data Version | Split Version | Feature Set | Model | Seed | Evaluation Split | Decision | Notes |
 |---|---|---|---|---|---|---|---:|---|---|---|
 | E00 | | 2026-08-31 | btcusdt_5m_v001 / btcusdt_1h_v001 / btcusdt_1h_target_v001 | chronological_70_15_15_v001 | | | | none | COMPLETE | E00 data foundation complete: acquisition, validation, canonical 5m and 1h datasets, one-hour target, and leakage-safe frozen chronological split. |
-| E01 | | | | | F0 | B0 | | validation | BLOCKED | |
+| E01 | E01_1h_F0_B0_20260831T070312Z | 2026-08-31 | btcusdt_1h_target_v001 | chronological_70_15_15_v001 | F0 | B0 | | train / validation | COMPLETE | Zero-return baseline established. Test set NOT EVALUATED. |
 | E02 | | | | | F0 | B1 | | validation | BLOCKED | |
 | E03 | | | | | F0 | B2 | 42 | validation | BLOCKED | |
 | E04 | | | | | F0 | B3 | 42 | validation | BLOCKED | |
@@ -184,4 +184,27 @@ than moved or modified. The frozen boundaries are stored in
 
 E00A through E00E are complete. The immutable raw archive set, validated canonical datasets,
 one-real-hour target, and leakage-safe frozen chronological split are ready for later benchmark
-phases. E01 has not started.
+phases.
+
+## E01 — COMPLETE
+
+The official zero-return regression baseline predicted `0.0` for every retained train and
+validation sample. The frozen test split was not evaluated. Reference MAE and RMSE values below
+are frozen for later skill-score calculations. Pearson IC, Spearman RankIC, and Directional
+Accuracy are not applicable to this constant-zero predictor.
+
+| Result | Train | Validation |
+|---|---:|---:|
+| Rows | 54,816 | 11,745 |
+| MAE | 0.004916899358637931 | 0.0036747470147978183 |
+| RMSE | 0.008582661664932718 | 0.0056077652587394914 |
+| R² | -0.000018685987652977687 | -0.00014007797634651986 |
+| Pearson IC | N/A | N/A |
+| Spearman RankIC | N/A | N/A |
+| Directional Accuracy | N/A | N/A |
+
+| Additional result | Measured value |
+|---|---|
+| Test set | NOT EVALUATED |
+| Targeted tests | 4 passed |
+| Artifact | `outputs/runs/E01_1h_F0_B0_20260831T070312Z/metrics.json` |

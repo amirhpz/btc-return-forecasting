@@ -46,6 +46,22 @@ def _safe_correlation(y_true: np.ndarray, y_pred: np.ndarray, *, rank: bool) -> 
 
 def regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, Any]:
     """Return the primary regression metric set in target space."""
+    metrics = regression_loss_metrics(y_true, y_pred)
+    truth = np.asarray(y_true, dtype=float)
+    pred = np.asarray(y_pred, dtype=float)
+    metrics.update(
+        {
+            "pearson_ic": _safe_correlation(truth, pred, rank=False),
+            "spearman_rank_ic": _safe_correlation(truth, pred, rank=True),
+            "directional_accuracy": directional_accuracy(truth, pred),
+            "mse_skill_vs_zero_return": mse_skill_vs_zero_return(truth, pred),
+        }
+    )
+    return metrics
+
+
+def regression_loss_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, Any]:
+    """Return only MAE, RMSE, and R-squared for regression predictions."""
     truth = np.asarray(y_true, dtype=float)
     pred = np.asarray(y_pred, dtype=float)
     if truth.shape != pred.shape:
@@ -59,8 +75,4 @@ def regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, Any]
         "mae": float(mean_absolute_error(truth, pred)),
         "rmse": float(np.sqrt(mse)),
         "r2": float(r2_score(truth, pred)),
-        "pearson_ic": _safe_correlation(truth, pred, rank=False),
-        "spearman_rank_ic": _safe_correlation(truth, pred, rank=True),
-        "directional_accuracy": directional_accuracy(truth, pred),
-        "mse_skill_vs_zero_return": mse_skill_vs_zero_return(truth, pred),
     }

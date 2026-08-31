@@ -12,6 +12,7 @@ from typing import Any
 from btc_forecasting.common.config import find_project_root, list_yaml_files, load_yaml
 from btc_forecasting.data.acquisition import run_acquisition
 from btc_forecasting.data.acquisition_config import load_acquisition_config
+from btc_forecasting.baselines.zero_return import run_zero_return_baseline
 from btc_forecasting.data.canonical_1h import run_canonical_1h_build
 from btc_forecasting.data.canonical_5m import run_canonical_5m_build
 from btc_forecasting.data.raw_validation import run_raw_validation
@@ -215,6 +216,13 @@ def _build_frozen_split(root: Path) -> int:
     return 0
 
 
+def _run_zero_return_baseline(root: Path) -> int:
+    result = run_zero_return_baseline(project_root=root)
+    print(json.dumps(result.result, indent=2, sort_keys=True))
+    print(f"artifact={result.metrics_path.relative_to(root)}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="btc-forecast")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -235,6 +243,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("build-canonical-1h")
     subparsers.add_parser("build-one-hour-targets")
     subparsers.add_parser("build-frozen-split")
+    subparsers.add_parser("run-zero-return-baseline")
     return parser
 
 
@@ -259,5 +268,6 @@ def main(argv: list[str] | None = None) -> None:
         "build-canonical-1h": lambda: _build_canonical_1h(root),
         "build-one-hour-targets": lambda: _build_one_hour_targets(root),
         "build-frozen-split": lambda: _build_frozen_split(root),
+        "run-zero-return-baseline": lambda: _run_zero_return_baseline(root),
     }
     raise SystemExit(commands[args.command]())
