@@ -231,6 +231,15 @@ def _run_ridge_baseline(root: Path) -> int:
     return 0
 
 
+def _run_vn_ridge_control(root: Path) -> int:
+    from btc_forecasting.baselines.ridge_vn import run_vn_ridge_control
+
+    result = run_vn_ridge_control(project_root=root)
+    print(json.dumps(result.result, indent=2, sort_keys=True))
+    print(f"artifact={result.metrics_path.parent.relative_to(root)}")
+    return 0
+
+
 def _run_lstm_baseline(root: Path) -> int:
     from btc_forecasting.training.lstm import run_lstm_baseline
 
@@ -362,6 +371,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("build-frozen-split")
     subparsers.add_parser("run-zero-return-baseline")
     subparsers.add_parser("run-ridge-baseline")
+    subparsers.add_parser("run-vn-ridge-control")
     subparsers.add_parser("run-lstm-baseline")
     subparsers.add_parser("run-lstm-mse-ablation")
     subparsers.add_parser("run-lstm-volatility-normalized-mse")
@@ -409,6 +419,7 @@ def main(argv: list[str] | None = None) -> None:
         "build-frozen-split": lambda: _build_frozen_split(root),
         "run-zero-return-baseline": lambda: _run_zero_return_baseline(root),
         "run-ridge-baseline": lambda: _run_ridge_baseline(root),
+        "run-vn-ridge-control": lambda: _run_vn_ridge_control(root),
         "run-lstm-baseline": lambda: _run_lstm_baseline(root),
         "run-lstm-mse-ablation": lambda: _run_lstm_mse_ablation(root),
         "run-lstm-volatility-normalized-mse": lambda: (
