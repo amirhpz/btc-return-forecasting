@@ -466,7 +466,10 @@ def _compute_segment(frame: pd.DataFrame) -> pd.DataFrame:
     feature["ret_vol_corr_30"] = return_volume_correlation.mask(
         return_volume_degenerate, 0.0
     ).replace([np.inf, -np.inf], np.nan)
-    return_skew = return_1.rolling(30, min_periods=30).skew()
+    if return_1.notna().sum() >= 30:
+        return_skew = return_1.rolling(30, min_periods=30).skew()
+    else:
+        return_skew = pd.Series(np.nan, index=frame.index, dtype=float)
     skew_degenerate = (
         return_1.rolling(30, min_periods=30).count().eq(30)
         & (
