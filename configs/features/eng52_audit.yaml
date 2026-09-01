@@ -1,0 +1,534 @@
+schema_version: 1
+audit_id: ENG52-A
+benchmark:
+  market: Binance Spot BTCUSDT
+  timeframe: 1h
+  availability: after completion of bar t
+  target: next-real-hour log return
+  gap_policy: no lagged, rolling, exponentially weighted, or pivot state may bridge a missing UTC hour
+status_values:
+  - SAFE
+  - SAFE_WITH_ADAPTATION
+  - REJECT
+summary_counts:
+  SAFE: 0
+  SAFE_WITH_ADAPTATION: 52
+  REJECT: 0
+
+gap_safe_defaults: &gap_safe_defaults
+  causal_at_decision_time: true
+  valid_on_1h_ohlcv: true
+  requires_gap_safe_adaptation: true
+  status: SAFE_WITH_ADAPTATION
+  required_adaptation: >-
+    Preserve the documented bar-open formula and parameters, but validate every shifted and
+    rolling input against exact consecutive UTC-hour timestamps; reset state at a gap and emit
+    missing until the complete real-hour history is available.
+
+features:
+  - <<: *gap_safe_defaults
+    feature_name: absret_ema_ratio_20_100
+    source_file: references/features/source/absret_ema_ratio_20_100.py
+    documented_definition_formula: "EMA_20(abs(ln(close[t-1] / close[t-2]))) / (EMA_100(abs(ln(close[t-1] / close[t-2]))) + EPS)"
+    required_raw_inputs: [close]
+    required_historical_lookback: "101 hourly rows; documented leading warm-up 101"
+    overlap_with_f0: "Conceptual overlap with F0 rolling volatility features; not an exact duplicate."
+    leakage_or_data_availability_risk: "Causal as documented; positional shifts and EMA state would otherwise bridge missing hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: amihud_illiquidity_20
+    source_file: references/features/source/amihud_illiquidity_20.py
+    documented_definition_formula: "mean_20(abs(ln(close[t-1] / close[t-2])) / (close[t-1] * volume[t-1]))"
+    required_raw_inputs: [close, volume]
+    required_historical_lookback: "21 hourly rows; documented leading warm-up 21"
+    overlap_with_f0: "Uses return and volume information also present in F0, but defines a distinct liquidity ratio."
+    leakage_or_data_availability_risk: "Causal; requires positive close/volume, consecutive hours, and Binance base-asset volume semantics."
+    required_adaptation: >-
+      Apply the standard consecutive-hour reset/masking rule and bind volume to the canonical
+      Binance base-asset volume column without changing the documented formula.
+
+  - <<: *gap_safe_defaults
+    feature_name: atr_pct_14
+    source_file: references/features/source/atr_pct_14.py
+    documented_definition_formula: "ATR_14_shift1[t] / (close[t-1] + EPS)"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "15 hourly rows; documented leading warm-up 15"
+    overlap_with_f0: "Conceptual overlap with F0 high-low range and rolling volatility; not exact."
+    leakage_or_data_availability_risk: "Causal as documented; ATR recursion and shifted close must reset after missing hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: atr_ratio_14_63
+    source_file: references/features/source/atr_ratio_14_63.py
+    documented_definition_formula: "ATR_14_shift1[t] / (ATR_63_shift1[t] + EPS)"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "64 hourly rows; documented leading warm-up 64"
+    overlap_with_f0: "Conceptual volatility-regime overlap with F0 rolling volatility; not exact."
+    leakage_or_data_availability_risk: "Causal; both ATR states would otherwise continue across a missing hour."
+
+  - <<: *gap_safe_defaults
+    feature_name: band_bb_percB_20_2
+    source_file: references/features/source/band_bb_percB_20_2.py
+    documented_definition_formula: "(close[t-1] - SMA_20(close.shift(1)) + 2*STD_20) / (4*STD_20), ddof=0; flat band = 0.5"
+    required_raw_inputs: [close]
+    required_historical_lookback: "20 hourly rows; documented leading warm-up 20"
+    overlap_with_f0: "No exact F0 duplicate; price-position concept is related to close_position_in_range."
+    leakage_or_data_availability_risk: "Causal; row-count rolling statistics would otherwise bridge hourly gaps."
+
+  - <<: *gap_safe_defaults
+    feature_name: bb_excursion_20_2
+    source_file: references/features/source/bb_excursion_20_2.py
+    documented_definition_formula: "min(percent_B_20_2, 0) + max(percent_B_20_2 - 1, 0)"
+    required_raw_inputs: [close]
+    required_historical_lookback: "20 hourly rows; documented leading warm-up 20"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Causal; its Bollinger window must not span a missing hour."
+
+  - <<: *gap_safe_defaults
+    feature_name: bb_width_rel_20
+    source_file: references/features/source/bb_width_rel_20.py
+    documented_definition_formula: "(upper_BB_20_2 - lower_BB_20_2) / (middle_BB_20 + EPS), STD ddof=0"
+    required_raw_inputs: [close]
+    required_historical_lookback: "20 hourly rows; documented leading warm-up 20"
+    overlap_with_f0: "Conceptual volatility overlap with F0 rolling volatility; not exact."
+    leakage_or_data_availability_risk: "Causal; rolling mean/std must use a complete consecutive-hour window."
+
+  - <<: *gap_safe_defaults
+    feature_name: bearish_engulf_score
+    source_file: references/features/source/bearish_engulf_score.py
+    documented_definition_formula: "I[bearish engulfing on bars t-2,t-1] * abs(close[t-1]-open[t-1]) / (ATR_14_shift1[t] + EPS)"
+    required_raw_inputs: [open, high, low, close]
+    required_historical_lookback: "15 hourly rows; documented leading warm-up 15"
+    overlap_with_f0: "Uses candle return/range information represented in F0, but is a distinct pattern score."
+    leakage_or_data_availability_risk: "Causal; engulfing bars must be adjacent real hours and ATR must reset after gaps."
+
+  - <<: *gap_safe_defaults
+    feature_name: body_signed_to_tr
+    source_file: references/features/source/body_signed_to_tr.py
+    documented_definition_formula: "clip((close[t-1] - open[t-1]) / (TR[t-1] + EPS), -1, 1)"
+    required_raw_inputs: [open, high, low, close]
+    required_historical_lookback: "2 hourly rows for true range; documented leading warm-up 1"
+    overlap_with_f0: "Strong conceptual overlap with F0 candle_log_return and high_low_range_pct; not exact."
+    leakage_or_data_availability_risk: "Causal; prior-close true range must use the exact preceding real hour."
+
+  - <<: *gap_safe_defaults
+    feature_name: body_to_tr
+    source_file: references/features/source/body_to_tr.py
+    documented_definition_formula: "abs(close[t-1] - open[t-1]) / (TR[t-1] + EPS)"
+    required_raw_inputs: [open, high, low, close]
+    required_historical_lookback: "2 hourly rows for true range; documented leading warm-up 1"
+    overlap_with_f0: "Strong conceptual overlap with F0 candle_log_return and high_low_range_pct; not exact."
+    leakage_or_data_availability_risk: "Causal; prior-close true range must use the exact preceding real hour."
+
+  - <<: *gap_safe_defaults
+    feature_name: breakdown_strength_20
+    source_file: references/features/source/breakdown_strength_20.py
+    documented_definition_formula: "max(min(low[t-21:t-1]) - close[t-1], 0) / (ATR_14_shift1[t] + EPS)"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "21 hourly rows; documented leading warm-up 21"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Causal; prior channel and ATR must be complete consecutive-hour histories."
+
+  - <<: *gap_safe_defaults
+    feature_name: breakout_strength_20
+    source_file: references/features/source/breakout_strength_20.py
+    documented_definition_formula: "max(close[t-1] - max(high[t-21:t-1]), 0) / (ATR_14_shift1[t] + EPS)"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "21 hourly rows; documented leading warm-up 21"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Causal; prior channel and ATR must be complete consecutive-hour histories."
+
+  - <<: *gap_safe_defaults
+    feature_name: bullish_engulf_score
+    source_file: references/features/source/bullish_engulf_score.py
+    documented_definition_formula: "I[bullish engulfing on bars t-2,t-1] * abs(close[t-1]-open[t-1]) / (ATR_14_shift1[t] + EPS)"
+    required_raw_inputs: [open, high, low, close]
+    required_historical_lookback: "15 hourly rows; documented leading warm-up 15"
+    overlap_with_f0: "Uses candle return/range information represented in F0, but is a distinct pattern score."
+    leakage_or_data_availability_risk: "Causal; engulfing bars must be adjacent real hours and ATR must reset after gaps."
+
+  - <<: *gap_safe_defaults
+    feature_name: cand_up_down_vol_ratio_20
+    source_file: references/features/source/cand_up_down_vol_ratio_20.py
+    documented_definition_formula: "sum_20(volume[t-1] where close[t-1] > open[t-1]) / (sum_20(volume[t-1] where close[t-1] < open[t-1]) + EPS)"
+    required_raw_inputs: [open, close, volume]
+    required_historical_lookback: "20 hourly rows; documented leading warm-up 19"
+    overlap_with_f0: "Uses volume and candle direction present in F0 components, but is not a duplicate."
+    leakage_or_data_availability_risk: "Causal; requires consecutive hours and consistent Binance base-asset volume semantics."
+    required_adaptation: >-
+      Apply the standard consecutive-hour reset/masking rule and bind volume to the canonical
+      Binance base-asset volume column without changing the documented formula.
+
+  - <<: *gap_safe_defaults
+    feature_name: channel_pos_20
+    source_file: references/features/source/channel_pos_20.py
+    documented_definition_formula: "clip((close[t-1] - min_20(low.shift(1))) / (max_20(high.shift(1)) - min_20(low.shift(1)) + EPS), 0, 1)"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "20 hourly rows; documented leading warm-up 20"
+    overlap_with_f0: "Conceptual overlap with F0 close_position_in_range at a different horizon."
+    leakage_or_data_availability_risk: "Causal; channel extrema require a complete consecutive-hour window."
+
+  - <<: *gap_safe_defaults
+    feature_name: close_location_value
+    source_file: references/features/source/close_location_value.py
+    documented_definition_formula: "((close[t-1]-low[t-1]) - (high[t-1]-close[t-1])) / (high[t-1]-low[t-1]); flat range = 0"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "1 completed hourly bar; documented leading warm-up 1"
+    overlap_with_f0: "Exact affine duplicate of F0 close_position_in_range: CLV = 2*close_position_in_range - 1, including flat-range conventions."
+    leakage_or_data_availability_risk: "Causal; the shifted completed bar must be the exact preceding UTC hour."
+
+  - <<: *gap_safe_defaults
+    feature_name: dmi_balance_14
+    source_file: references/features/source/dmi_balance_14.py
+    documented_definition_formula: "(DI_plus_14 - DI_minus_14) / (DI_plus_14 + DI_minus_14 + EPS), Wilder alpha=1/14"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "15 hourly rows; documented leading warm-up 15"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Causal; directional-movement and ATR recursive state must reset after a missing hour."
+
+  - <<: *gap_safe_defaults
+    feature_name: dollar_vol_rel_20
+    source_file: references/features/source/dollar_vol_rel_20.py
+    documented_definition_formula: "(close[t-1] * volume[t-1]) / (EMA_20((close*volume).shift(1))[t] + EPS)"
+    required_raw_inputs: [close, volume]
+    required_historical_lookback: "20 hourly rows; documented leading warm-up 20"
+    overlap_with_f0: "Conceptual volume overlap with F0 relative_volume_24h; not exact."
+    leakage_or_data_availability_risk: "Causal; dollar volume is approximated from close times Binance base volume, and EMA must reset at gaps."
+    required_adaptation: >-
+      Apply the standard consecutive-hour reset/masking rule and bind volume to Binance base-asset
+      volume; retain the documented close-times-volume approximation.
+
+  - <<: *gap_safe_defaults
+    feature_name: downside_semivol_20
+    source_file: references/features/source/downside_semivol_20.py
+    documented_definition_formula: "sqrt(mean_20(min(ln(close[t-1] / close[t-2]), 0)^2))"
+    required_raw_inputs: [close]
+    required_historical_lookback: "21 hourly rows; documented leading warm-up 21"
+    overlap_with_f0: "Conceptual overlap with F0 rolling volatility; downside-only and different horizon."
+    leakage_or_data_availability_risk: "Causal; return and rolling windows must contain consecutive real hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: drawdown_from_peak_60
+    source_file: references/features/source/drawdown_from_peak_60.py
+    documented_definition_formula: "(max_60(close.shift(1)) - close[t-1]) / (max_60(close.shift(1)) + EPS)"
+    required_raw_inputs: [close]
+    required_historical_lookback: "60 hourly rows; documented leading warm-up 60"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Causal; rolling peak must be formed from 60 consecutive real hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: efficiency_ratio_20
+    source_file: references/features/source/efficiency_ratio_20.py
+    documented_definition_formula: "abs(close[t-1] - close[t-21]) / (sum_20(abs(delta(close.shift(1)))) + EPS)"
+    required_raw_inputs: [close]
+    required_historical_lookback: "21 hourly rows; documented leading warm-up 21"
+    overlap_with_f0: "Uses return/momentum information represented in F0, but is not an exact feature."
+    leakage_or_data_availability_risk: "Causal; endpoint lag and path-length window must not bridge a gap."
+
+  - <<: *gap_safe_defaults
+    feature_name: ema_gap_atr_20
+    source_file: references/features/source/ema_gap_atr_20.py
+    documented_definition_formula: "(close[t-1] - EMA_20(close.shift(1))[t]) / (ATR_14_shift1[t] + EPS)"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "20 hourly rows; documented leading warm-up 20"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Causal; both EMA and ATR states must reset at missing hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: ema_slope_atr_20_5
+    source_file: references/features/source/ema_slope_atr_20_5.py
+    documented_definition_formula: "(EMA_20(close.shift(1))[t] - EMA_20(close.shift(1))[t-5]) / (5 * ATR_14_shift1[t] + EPS)"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "25 hourly rows; documented leading warm-up 25"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Causal; EMA, five-hour lag, and ATR must use uninterrupted hourly state."
+
+  - <<: *gap_safe_defaults
+    feature_name: inside_bar_compression
+    source_file: references/features/source/inside_bar_compression.py
+    documented_definition_formula: "I[high[t-1] <= high[t-2] and low[t-1] >= low[t-2]] * (1 - range[t-1] / range[t-2]); invalid mother range = 0"
+    required_raw_inputs: [high, low]
+    required_historical_lookback: "2 adjacent hourly bars; documented leading warm-up 0"
+    overlap_with_f0: "Uses high-low range information also present in F0, but defines a distinct pattern."
+    leakage_or_data_availability_risk: "Causal; the mother and child candles must be exact adjacent real hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: log_range_over_vol_100
+    source_file: references/features/source/log_range_over_vol_100.py
+    documented_definition_formula: "(max_100(log(close.shift(1))) - min_100(log(close.shift(1)))) / (STD_100(ln(close[t-1]/close[t-2]), ddof=1) + EPS)"
+    required_raw_inputs: [close]
+    required_historical_lookback: "101 hourly rows; documented leading warm-up 101"
+    overlap_with_f0: "Conceptual overlap with F0 rolling volatility and multi-hour return; not exact."
+    leakage_or_data_availability_risk: "Causal; both 100-hour windows require uninterrupted hourly observations."
+
+  - <<: *gap_safe_defaults
+    feature_name: lower_wick_to_tr
+    source_file: references/features/source/lower_wick_to_tr.py
+    documented_definition_formula: "(min(open[t-1], close[t-1]) - low[t-1]) / (TR[t-1] + EPS)"
+    required_raw_inputs: [open, high, low, close]
+    required_historical_lookback: "2 hourly rows for true range; documented leading warm-up 1"
+    overlap_with_f0: "Conceptual candle-structure overlap with F0 candle return/range features; not exact."
+    leakage_or_data_availability_risk: "Causal; true range must use the exact preceding close rather than bridge a gap."
+
+  - <<: *gap_safe_defaults
+    feature_name: macd_hist_atr
+    source_file: references/features/source/macd_hist_atr.py
+    documented_definition_formula: "(EMA_12(close.shift(1)) - EMA_26(close.shift(1)) - EMA_9(MACD)) / (ATR_14_shift1 + EPS)"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "34 hourly rows; documented leading warm-up 34"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Causal; three EMA states and ATR must reset at missing hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: mom_stoch_rsi_14_14_3
+    source_file: references/features/source/mom_stoch_rsi_14_14_3.py
+    documented_definition_formula: "SMA_3((RSI_14 - min_14(RSI_14)) / (max_14(RSI_14) - min_14(RSI_14))); flat range = 0.5"
+    required_raw_inputs: [close]
+    required_historical_lookback: "30 hourly rows; documented leading warm-up 30"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Causal; Wilder RSI and nested rolling/SMA state must restart after a missing hour."
+
+  - <<: *gap_safe_defaults
+    feature_name: mom_tl_break_bull_30
+    source_file: references/features/source/mom_tl_break_bull_30.py
+    documented_definition_formula: "I[close crosses above descending line through latest two confirmed pivot highs]; left=3, right=1, maximum age=30, minimum separation=3"
+    required_raw_inputs: [high, close, open_time]
+    required_historical_lookback: "Up to 30 hourly pivot-age rows plus pivot confirmation history; documented leading warm-up 0"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Pivot confirmation is delayed and causal in the source, but datetime naming and row-count ages are incompatible without adaptation."
+    required_adaptation: >-
+      Map the reference datetime input to canonical UTC open_time, preserve the confirmed-pivot
+      delay and parameters, express age/separation on consecutive real hours, and reset pivot and
+      cross state after any gap.
+
+  - <<: *gap_safe_defaults
+    feature_name: open_gap_atr_14
+    source_file: references/features/source/open_gap_atr_14.py
+    documented_definition_formula: "(open[t] - close[t-1]) / (ATR_14_shift1[t] + EPS)"
+    required_raw_inputs: [open, high, low, close]
+    required_historical_lookback: "15 hourly rows; documented leading warm-up 15"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "The current bar open is the sole current-bar input; it is causal by the source bar-open contract and is available by benchmark decision time after bar t completes."
+    required_adaptation: >-
+      Preserve open[t] exactly as documented, align output row t to the completed benchmark bar t,
+      require close[t-1] to be the exact prior UTC hour, and reset ATR after a gap.
+
+  - <<: *gap_safe_defaults
+    feature_name: outside_bar_expansion
+    source_file: references/features/source/outside_bar_expansion.py
+    documented_definition_formula: "I[high[t-1] >= high[t-2] and low[t-1] <= low[t-2]] * range[t-1] / (ATR_14_shift1[t] + EPS)"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "15 hourly rows; documented leading warm-up 15"
+    overlap_with_f0: "Uses high-low range information also present in F0, but defines a distinct pattern."
+    leakage_or_data_availability_risk: "Causal; pattern bars must be adjacent hours and ATR must reset after gaps."
+
+  - <<: *gap_safe_defaults
+    feature_name: parkinson_vol_20
+    source_file: references/features/source/parkinson_vol_20.py
+    documented_definition_formula: "sqrt(mean_20(ln(high[t-1]/low[t-1])^2) / (4*ln(2)))"
+    required_raw_inputs: [high, low]
+    required_historical_lookback: "20 hourly rows; documented leading warm-up 20"
+    overlap_with_f0: "Conceptual overlap with F0 high_low_range_pct and rolling volatility; not exact."
+    leakage_or_data_availability_risk: "Causal; range window must consist of consecutive real hours and requires positive high/low."
+
+  - <<: *gap_safe_defaults
+    feature_name: range_compression_20_100
+    source_file: references/features/source/range_compression_20_100.py
+    documented_definition_formula: "clip((max_20(high.shift(1))-min_20(low.shift(1))) / (max_100(high.shift(1))-min_100(low.shift(1))+EPS), 0, 1)"
+    required_raw_inputs: [high, low]
+    required_historical_lookback: "100 hourly rows; documented leading warm-up 100"
+    overlap_with_f0: "Conceptual high-low range overlap with F0; different horizons and definition."
+    leakage_or_data_availability_risk: "Causal; both channel windows require uninterrupted hourly data."
+
+  - <<: *gap_safe_defaults
+    feature_name: realized_vol_20
+    source_file: references/features/source/realized_vol_20.py
+    documented_definition_formula: "STD_20(ln(close[t-1] / close[t-2]), ddof=0)"
+    required_raw_inputs: [close]
+    required_historical_lookback: "21 hourly rows; documented leading warm-up 21"
+    overlap_with_f0: "Same population-log-return volatility family as F0 rolling_volatility_6h/24h, with a 20-hour window and one-bar source alignment."
+    leakage_or_data_availability_risk: "Causal; return and rolling windows must contain consecutive real hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: ret_autocorr_1_30
+    source_file: references/features/source/ret_autocorr_1_30.py
+    documented_definition_formula: "corr_30(ln(close[t-1]/close[t-2]), ln(close[t-2]/close[t-3])); degenerate mature window = 0"
+    required_raw_inputs: [close]
+    required_historical_lookback: "32 hourly rows; documented leading warm-up 32"
+    overlap_with_f0: "Uses F0-style one-hour returns but defines a distinct serial-dependence statistic."
+    leakage_or_data_availability_risk: "Causal; paired returns and correlation window must not bridge missing hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: ret_vol_corr_30
+    source_file: references/features/source/ret_vol_corr_30.py
+    documented_definition_formula: "corr_30(abs(ln(close[t-1]/close[t-2])), volume[t-1]); degenerate mature window = 0"
+    required_raw_inputs: [close, volume]
+    required_historical_lookback: "31 hourly rows; documented leading warm-up 31"
+    overlap_with_f0: "Combines F0-style returns and volume but is not an exact duplicate."
+    leakage_or_data_availability_risk: "Causal; paired rolling window must be consecutive and volume semantics must remain Binance base volume."
+    required_adaptation: >-
+      Apply the standard consecutive-hour reset/masking rule and bind volume to the canonical
+      Binance base-asset volume column without changing the documented formula.
+
+  - <<: *gap_safe_defaults
+    feature_name: return_skew_30
+    source_file: references/features/source/return_skew_30.py
+    documented_definition_formula: "sample_skew_30(ln(close[t-1] / close[t-2])); degenerate mature window = 0"
+    required_raw_inputs: [close]
+    required_historical_lookback: "31 hourly rows; documented leading warm-up 31"
+    overlap_with_f0: "Uses F0-style one-hour returns but defines a distinct higher moment."
+    leakage_or_data_availability_risk: "Causal; return and skew windows must contain consecutive real hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: roc_10
+    source_file: references/features/source/roc_10.py
+    documented_definition_formula: "close[t-1] / close[t-11] - 1"
+    required_raw_inputs: [close]
+    required_historical_lookback: "11 hourly rows; documented leading warm-up 11"
+    overlap_with_f0: "Conceptual overlap with F0 log_return_3h/6h; arithmetic 10-hour return is not exact."
+    leakage_or_data_availability_risk: "Causal; the ten-real-hour lag must not become ten observed rows across gaps."
+
+  - <<: *gap_safe_defaults
+    feature_name: rsi_centered_14
+    source_file: references/features/source/rsi_centered_14.py
+    documented_definition_formula: "Wilder_RSI_14(close.shift(1)) / 100 - 0.5"
+    required_raw_inputs: [close]
+    required_historical_lookback: "15 hourly rows; documented leading warm-up 15"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Causal; Wilder RSI state must restart and warm up after an hourly gap."
+
+  - <<: *gap_safe_defaults
+    feature_name: rsi_div_persistence
+    source_file: references/features/source/rsi_div_persistence.py
+    documented_definition_formula: "signed consecutive run length of rsi_hidden_div_flag; RSI=14, pivot_k=3, max_age=60, min_separation=5, SMA trend=50"
+    required_raw_inputs: [high, low, close, open_time]
+    required_historical_lookback: "Up to 60 hourly pivot-age rows plus RSI/trend warm-up; documented leading warm-up 0"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Confirmed pivots are causal in source, but datetime naming, positional age, RSI/trend state, and run persistence require gap-aware adaptation."
+    required_adaptation: >-
+      Map datetime to canonical UTC open_time, preserve delayed pivot confirmation and all parameters,
+      express pivot age/separation and persistence on consecutive real hours, and reset RSI, trend,
+      pivot, and run state after a gap.
+
+  - <<: *gap_safe_defaults
+    feature_name: rsi_hidden_div_flag
+    source_file: references/features/source/rsi_hidden_div_flag.py
+    documented_definition_formula: "1 for bullish hidden RSI divergence, -1 for bearish hidden RSI divergence, otherwise 0; RSI=14, pivot_k=3, max_age=60, min_separation=5, SMA trend=50"
+    required_raw_inputs: [high, low, close, open_time]
+    required_historical_lookback: "Up to 60 hourly pivot-age rows plus RSI/trend warm-up; documented leading warm-up 0"
+    overlap_with_f0: "No exact F0 duplicate."
+    leakage_or_data_availability_risk: "Confirmed pivots are causal in source, but datetime naming and positional pivot/indicator state require gap-aware adaptation."
+    required_adaptation: >-
+      Map datetime to canonical UTC open_time, preserve delayed pivot confirmation and all parameters,
+      express pivot age/separation on consecutive real hours, and reset RSI, trend, and pivot state
+      after a gap.
+
+  - <<: *gap_safe_defaults
+    feature_name: sign_flip_rate_20
+    source_file: references/features/source/sign_flip_rate_20.py
+    documented_definition_formula: "mean_20(I[sign(return[t]) * sign(return[t-1]) < 0]), return[t]=ln(close[t-1]/close[t-2])"
+    required_raw_inputs: [close]
+    required_historical_lookback: "22 hourly rows for 20 adjacent return-sign comparisons; documented leading warm-up 19"
+    overlap_with_f0: "Uses F0-style one-hour returns but defines a distinct direction-persistence statistic."
+    leakage_or_data_availability_risk: "Causal; adjacent return signs and the rolling window must not cross gaps."
+
+  - <<: *gap_safe_defaults
+    feature_name: tr_to_atr_14
+    source_file: references/features/source/tr_to_atr_14.py
+    documented_definition_formula: "TR[t-1] / (ATR_14_shift1[t] + EPS)"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "15 hourly rows; documented leading warm-up 15"
+    overlap_with_f0: "Conceptual range/volatility overlap with F0; not exact."
+    leakage_or_data_availability_risk: "Causal; true range and ATR state must use exact consecutive hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: up_close_ratio_5
+    source_file: references/features/source/up_close_ratio_5.py
+    documented_definition_formula: "mean_5(I[close[t-1] > close[t-2]])"
+    required_raw_inputs: [close]
+    required_historical_lookback: "6 hourly closes for five changes; documented leading warm-up 4"
+    overlap_with_f0: "Uses signs of F0-style one-hour returns but is not an exact duplicate."
+    leakage_or_data_availability_risk: "Causal; close changes and five-observation window must be consecutive real hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: upper_wick_to_tr
+    source_file: references/features/source/upper_wick_to_tr.py
+    documented_definition_formula: "(high[t-1] - max(open[t-1], close[t-1])) / (TR[t-1] + EPS)"
+    required_raw_inputs: [open, high, low, close]
+    required_historical_lookback: "2 hourly rows for true range; documented leading warm-up 1"
+    overlap_with_f0: "Conceptual candle-structure overlap with F0 candle return/range features; not exact."
+    leakage_or_data_availability_risk: "Causal; true range must use the exact preceding close rather than bridge a gap."
+
+  - <<: *gap_safe_defaults
+    feature_name: upside_semivol_20
+    source_file: references/features/source/upside_semivol_20.py
+    documented_definition_formula: "sqrt(mean_20(max(ln(close[t-1] / close[t-2]), 0)^2))"
+    required_raw_inputs: [close]
+    required_historical_lookback: "21 hourly rows; documented leading warm-up 21"
+    overlap_with_f0: "Conceptual overlap with F0 rolling volatility; upside-only and different horizon."
+    leakage_or_data_availability_risk: "Causal; return and rolling windows must contain consecutive real hours."
+
+  - <<: *gap_safe_defaults
+    feature_name: vol_of_vol_ratio_20
+    source_file: references/features/source/vol_of_vol_ratio_20.py
+    documented_definition_formula: "STD_20(TR/ATR_14, ddof=0) / (EMA_20(TR/ATR_14) + EPS)"
+    required_raw_inputs: [high, low, close]
+    required_historical_lookback: "34 hourly rows; documented leading warm-up 34"
+    overlap_with_f0: "Conceptual volatility-regime overlap with F0 rolling volatility; not exact."
+    leakage_or_data_availability_risk: "Causal; TR, ATR, rolling std, and EMA states must reset after gaps."
+
+  - <<: *gap_safe_defaults
+    feature_name: vol_over_ema20
+    source_file: references/features/source/vol_over_ema20.py
+    documented_definition_formula: "volume[t-1] / (EMA_20(volume.shift(1))[t] + EPS)"
+    required_raw_inputs: [volume]
+    required_historical_lookback: "20 hourly rows; documented leading warm-up 20"
+    overlap_with_f0: "Conceptual overlap with F0 relative_volume_24h; different baseline."
+    leakage_or_data_availability_risk: "Causal; EMA must reset at gaps and volume must retain Binance base-asset semantics."
+    required_adaptation: >-
+      Apply the standard consecutive-hour reset/masking rule and bind volume to the canonical
+      Binance base-asset volume column without changing the documented formula.
+
+  - <<: *gap_safe_defaults
+    feature_name: vol_over_median20
+    source_file: references/features/source/vol_over_median20.py
+    documented_definition_formula: "volume[t-1] / (median_20(volume.shift(1))[t] + EPS)"
+    required_raw_inputs: [volume]
+    required_historical_lookback: "20 hourly rows; documented leading warm-up 20"
+    overlap_with_f0: "Conceptual overlap with F0 relative_volume_24h; different baseline."
+    leakage_or_data_availability_risk: "Causal; median window must be consecutive and volume must retain Binance base-asset semantics."
+    required_adaptation: >-
+      Apply the standard consecutive-hour reset/masking rule and bind volume to the canonical
+      Binance base-asset volume column without changing the documented formula.
+
+  - <<: *gap_safe_defaults
+    feature_name: vol_ratio_20_100
+    source_file: references/features/source/vol_ratio_20_100.py
+    documented_definition_formula: "EMA_20(volume.shift(1))[t] / (EMA_100(volume.shift(1))[t] + EPS)"
+    required_raw_inputs: [volume]
+    required_historical_lookback: "100 hourly rows; documented leading warm-up 100"
+    overlap_with_f0: "Conceptual volume-regime overlap with F0 relative_volume_24h; not exact."
+    leakage_or_data_availability_risk: "Causal; both EMA states must reset at gaps and volume must retain Binance base-asset semantics."
+    required_adaptation: >-
+      Apply the standard consecutive-hour reset/masking rule and bind volume to the canonical
+      Binance base-asset volume column without changing the documented formula.
+
+  - <<: *gap_safe_defaults
+    feature_name: vol_regime_pct_120
+    source_file: references/features/source/vol_regime_pct_120.py
+    documented_definition_formula: "count(previous_120_realized_volatility_20 <= current_realized_volatility_20) / 120, STD ddof=1, weak ties"
+    required_raw_inputs: [close]
+    required_historical_lookback: "141 hourly rows; documented leading warm-up 141"
+    overlap_with_f0: "Conceptual volatility-regime overlap with F0 rolling volatility; not exact."
+    leakage_or_data_availability_risk: "Causal and excludes current value from reference distribution; nested windows must not bridge gaps."
+
+  - <<: *gap_safe_defaults
+    feature_name: volume_percentile_60
+    source_file: references/features/source/volume_percentile_60.py
+    documented_definition_formula: "count(volume[t-61:t-1] <= volume[t-1]) / 60, weak ties"
+    required_raw_inputs: [volume]
+    required_historical_lookback: "61 hourly rows; documented leading warm-up 61"
+    overlap_with_f0: "Conceptual volume-regime overlap with F0 relative_volume_24h; not exact."
+    leakage_or_data_availability_risk: "Causal and excludes current ranked value from its reference window; requires consecutive hours and Binance base volume."
+    required_adaptation: >-
+      Apply the standard consecutive-hour reset/masking rule and bind volume to the canonical
+      Binance base-asset volume column without changing the documented weak-tie formula.
