@@ -1,0 +1,75 @@
+feature_set:
+  id: ENG52_STABLE_CANDIDATES
+  status: train_only_temporal_screening
+  source_eng52_artifact: data/processed/btcusdt_1h_eng52_v001.parquet
+  source_qc_artifact: outputs/data/eng52/qc_summary.json
+  train_only_scope: Frozen TRAIN targets only; validation and TEST target rows are
+    neither read nor used.
+  target:
+    definition: future_log_return_1h / rolling_volatility_24h
+    epsilon_added: false
+  screening_rule:
+    required_same_sign_blocks: 5
+    total_chronological_blocks: 6
+    full_train_sign_must_match_dominant_block_sign: true
+    minimum_median_absolute_block_spearman: 0.02
+    minimum_absolute_full_train_spearman: 0.02
+    otherwise: WEAK_OR_UNSTABLE
+  stable_candidate_features:
+  - band_bb_percB_20_2
+  - body_signed_to_tr
+  - bullish_engulf_score
+  - channel_pos_20
+  - close_location_value
+  - ema_gap_atr_20
+  - mom_stoch_rsi_14_14_3
+  - roc_10
+  - up_close_ratio_5
+  redundant_alternates:
+  - feature_name: rsi_centered_14
+    preferred_representative: ema_gap_atr_20
+  - feature_name: rsi_hidden_div_flag
+    preferred_representative: rsi_div_persistence
+  - feature_name: vol_over_ema20
+    preferred_representative: dollar_vol_rel_20
+  weak_or_unstable_features:
+  - absret_ema_ratio_20_100
+  - amihud_illiquidity_20
+  - atr_pct_14
+  - atr_ratio_14_63
+  - bb_excursion_20_2
+  - bb_width_rel_20
+  - bearish_engulf_score
+  - body_to_tr
+  - breakdown_strength_20
+  - breakout_strength_20
+  - cand_up_down_vol_ratio_20
+  - dmi_balance_14
+  - dollar_vol_rel_20
+  - downside_semivol_20
+  - drawdown_from_peak_60
+  - efficiency_ratio_20
+  - ema_slope_atr_20_5
+  - inside_bar_compression
+  - log_range_over_vol_100
+  - lower_wick_to_tr
+  - macd_hist_atr
+  - mom_tl_break_bull_30
+  - open_gap_atr_14
+  - outside_bar_expansion
+  - parkinson_vol_20
+  - range_compression_20_100
+  - realized_vol_20
+  - ret_autocorr_1_30
+  - ret_vol_corr_30
+  - return_skew_30
+  - rsi_div_persistence
+  - sign_flip_rate_20
+  - tr_to_atr_14
+  - upper_wick_to_tr
+  - upside_semivol_20
+  - vol_of_vol_ratio_20
+  - vol_over_median20
+  - vol_ratio_20_100
+  - vol_regime_pct_120
+  - volume_percentile_60

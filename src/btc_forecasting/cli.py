@@ -305,6 +305,17 @@ def _run_lstm_vn_returns_only(root: Path) -> int:
     return 0
 
 
+def _run_lstm_vn_stable_paired(root: Path) -> int:
+    from btc_forecasting.training.lstm_vn_stable import (
+        run_lstm_vn_stable_paired_experiment,
+    )
+
+    result = run_lstm_vn_stable_paired_experiment(project_root=root)
+    print(json.dumps(result.result, indent=2, sort_keys=True))
+    print(f"artifact={result.run_directory.relative_to(root)}")
+    return 0
+
+
 def _diagnose_lstm_distribution(root: Path, source_run: Path) -> int:
     from btc_forecasting.training.lstm_diagnostics import (
         run_prediction_distribution_diagnostic,
@@ -417,6 +428,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("run-lstm-mse-ablation")
     subparsers.add_parser("run-lstm-volatility-normalized-mse")
     subparsers.add_parser("run-lstm-vn-returns-only")
+    subparsers.add_parser("run-lstm-vn-stable-paired")
     diagnose_distribution = subparsers.add_parser("diagnose-lstm-distribution")
     diagnose_distribution.add_argument("--source-run", type=Path, required=True)
     diagnose_overfit = subparsers.add_parser("diagnose-lstm-overfit")
@@ -471,6 +483,7 @@ def main(argv: list[str] | None = None) -> None:
             _run_lstm_vn_mse_experiment(root)
         ),
         "run-lstm-vn-returns-only": lambda: _run_lstm_vn_returns_only(root),
+        "run-lstm-vn-stable-paired": lambda: _run_lstm_vn_stable_paired(root),
         "diagnose-lstm-distribution": lambda: _diagnose_lstm_distribution(
             root, args.source_run
         ),
