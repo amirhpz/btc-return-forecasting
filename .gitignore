@@ -49,3 +49,6 @@ configs/local/
 
 # Notebook checkpoints
 .ipynb_checkpoints/
+
+# Univercity
+reports
