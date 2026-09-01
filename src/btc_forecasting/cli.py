@@ -338,6 +338,14 @@ def _run_lstm_vn_walkforward(root: Path) -> int:
     return 0
 
 
+def _run_horizon_target_audit(root: Path) -> int:
+    from btc_forecasting.targets.horizon_audit import run_horizon_target_audit
+
+    result = run_horizon_target_audit(project_root=root)
+    print(f"artifact={result.artifact_path.relative_to(root)}")
+    return 0
+
+
 def _diagnose_lstm_distribution(root: Path, source_run: Path) -> int:
     from btc_forecasting.training.lstm_diagnostics import (
         run_prediction_distribution_diagnostic,
@@ -453,6 +461,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("run-lstm-vn-stable-paired")
     subparsers.add_parser("run-lstm-vn-multiseed")
     subparsers.add_parser("run-lstm-vn-walkforward")
+    subparsers.add_parser("run-horizon-target-audit")
     diagnose_distribution = subparsers.add_parser("diagnose-lstm-distribution")
     diagnose_distribution.add_argument("--source-run", type=Path, required=True)
     diagnose_overfit = subparsers.add_parser("diagnose-lstm-overfit")
@@ -510,6 +519,7 @@ def main(argv: list[str] | None = None) -> None:
         "run-lstm-vn-stable-paired": lambda: _run_lstm_vn_stable_paired(root),
         "run-lstm-vn-multiseed": lambda: _run_lstm_vn_multiseed(root),
         "run-lstm-vn-walkforward": lambda: _run_lstm_vn_walkforward(root),
+        "run-horizon-target-audit": lambda: _run_horizon_target_audit(root),
         "diagnose-lstm-distribution": lambda: _diagnose_lstm_distribution(
             root, args.source_run
         ),
