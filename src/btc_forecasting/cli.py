@@ -221,6 +221,15 @@ def _run_eng52_qc(root: Path) -> int:
     return 0
 
 
+def _run_eng52_signal_screening(root: Path) -> int:
+    from btc_forecasting.features.eng52_screening import run_eng52_signal_screening
+
+    result = run_eng52_signal_screening(project_root=root)
+    print(f"screening={result.screening_path.relative_to(root)}")
+    print(f"config={result.config_path.relative_to(root)}")
+    return 0
+
+
 def _build_one_hour_targets(root: Path) -> int:
     result = run_one_hour_target_build(project_root=root)
     print(json.dumps(result.verification, indent=2, sort_keys=True))
@@ -398,6 +407,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("build-canonical-1h")
     subparsers.add_parser("build-eng52-features")
     subparsers.add_parser("run-eng52-qc")
+    subparsers.add_parser("run-eng52-signal-screening")
     subparsers.add_parser("build-one-hour-targets")
     subparsers.add_parser("build-frozen-split")
     subparsers.add_parser("run-zero-return-baseline")
@@ -449,6 +459,7 @@ def main(argv: list[str] | None = None) -> None:
         "build-canonical-1h": lambda: _build_canonical_1h(root),
         "build-eng52-features": lambda: _build_eng52_features(root),
         "run-eng52-qc": lambda: _run_eng52_qc(root),
+        "run-eng52-signal-screening": lambda: _run_eng52_signal_screening(root),
         "build-one-hour-targets": lambda: _build_one_hour_targets(root),
         "build-frozen-split": lambda: _build_frozen_split(root),
         "run-zero-return-baseline": lambda: _run_zero_return_baseline(root),
