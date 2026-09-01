@@ -203,6 +203,16 @@ def _build_canonical_1h(root: Path) -> int:
     return 0
 
 
+def _build_eng52_features(root: Path) -> int:
+    from btc_forecasting.features.eng52_build import run_eng52_build
+
+    result = run_eng52_build(project_root=root)
+    print(json.dumps(result.summary, indent=2, sort_keys=True))
+    print(f"artifact={result.artifact_path.relative_to(root)}")
+    print(f"summary={result.summary_path.relative_to(root)}")
+    return 0
+
+
 def _build_one_hour_targets(root: Path) -> int:
     result = run_one_hour_target_build(project_root=root)
     print(json.dumps(result.verification, indent=2, sort_keys=True))
@@ -378,6 +388,7 @@ def build_parser() -> argparse.ArgumentParser:
     build_canonical_5m = subparsers.add_parser("build-canonical-5m")
     build_canonical_5m.add_argument("--config", type=Path, required=True)
     subparsers.add_parser("build-canonical-1h")
+    subparsers.add_parser("build-eng52-features")
     subparsers.add_parser("build-one-hour-targets")
     subparsers.add_parser("build-frozen-split")
     subparsers.add_parser("run-zero-return-baseline")
@@ -427,6 +438,7 @@ def main(argv: list[str] | None = None) -> None:
         "validate-raw-data": lambda: _validate_raw_data(root, args.config),
         "build-canonical-5m": lambda: _build_canonical_5m(root, args.config),
         "build-canonical-1h": lambda: _build_canonical_1h(root),
+        "build-eng52-features": lambda: _build_eng52_features(root),
         "build-one-hour-targets": lambda: _build_one_hour_targets(root),
         "build-frozen-split": lambda: _build_frozen_split(root),
         "run-zero-return-baseline": lambda: _run_zero_return_baseline(root),

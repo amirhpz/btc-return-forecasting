@@ -149,8 +149,8 @@ features:
   - <<: *gap_safe_defaults
     feature_name: cand_up_down_vol_ratio_20
     source_file: references/features/source/cand_up_down_vol_ratio_20.py
-    documented_definition_formula: "sum_20(volume[t-1] where close[t-1] > open[t-1]) / (sum_20(volume[t-1] where close[t-1] < open[t-1]) + EPS)"
-    required_raw_inputs: [open, close, volume]
+    documented_definition_formula: "sum_20(volume[t-1] where close[t-1] > close[t-2]) / (sum_20(volume[t-1] where close[t-1] < close[t-2]) + EPS)"
+    required_raw_inputs: [close, volume]
     required_historical_lookback: "20 hourly rows; documented leading warm-up 19"
     overlap_with_f0: "Uses volume and candle direction present in F0 components, but is not a duplicate."
     leakage_or_data_availability_risk: "Causal; requires consecutive hours and consistent Binance base-asset volume semantics."
