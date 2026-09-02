@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-import os
 from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
@@ -51,6 +50,11 @@ class HysteresisResult:
 class TrendLabelAuditResult:
     artifact_path: Path
     summary: dict[str, object]
+
+
+def _write_summary_artifact(path: Path, summary: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _write_json(path, summary)
 
 
 def causal_wilder_atr14(frame: pd.DataFrame) -> pd.DataFrame:
@@ -792,7 +796,5 @@ def run_trend_label_audit(*, project_root: Path) -> TrendLabelAuditResult:
         "profitability_backtest": "NOT PERFORMED",
     }
     artifact_path = root / AUDIT_OUTPUT_RELATIVE_PATH
-    temporary = artifact_path.with_suffix(".json.tmp")
-    _write_json(temporary, summary)
-    os.replace(temporary, artifact_path)
+    _write_summary_artifact(artifact_path, summary)
     return TrendLabelAuditResult(artifact_path=artifact_path, summary=summary)
